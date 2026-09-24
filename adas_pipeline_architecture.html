@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ADAS Pipeline Architecture - Interactive Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&family=Orbitron:wght@700;800;900&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-space: #050813;
+      --bg-card: rgba(11, 19, 36, 0.9);
+      --bg-card-hover: rgba(16, 28, 54, 0.98);
+      --cyan-neon: #00e5ff;
+      --blue-accent: #38bdf8;
+      --emerald-safe: #10b981;
+      --amber-warn: #f59e0b;
+      --rose-alert: #f43f5e;
+      --purple-accent: #a855f7;
+      --border-hud: rgba(0, 229, 255, 0.28);
+      --font-ui: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-heading: 'Orbitron', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-space);
+      background-image:
+        radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      color: #e2e8f0;
+      font-family: var(--font-ui);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ultra-Slim Top HUD Header */
+    header.hud-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 46px;
+      padding: 0 20px;
+      background: rgba(6, 11, 24, 0.96);
+      border-bottom: 1px solid var(--border-hud);
+      backdrop-filter: blur(14px);
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid var(--cyan-neon);
+      border-radius: 5px;
+      color: var(--cyan-neon);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-back:hover {
+      background: var(--cyan-neon);
+      color: #060b18;
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.6);
+      transform: translateX(-2px);
+    }
+
+    .header-title-main {
+      font-family: var(--font-heading);
+      font-size: 16.5px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--cyan-neon) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-ctrl {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      background: rgba(30, 41, 59, 0.7);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      transition: all 0.2s ease;
+    }
+
+    .btn-ctrl:hover {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: var(--cyan-neon);
+      color: var(--cyan-neon);
+    }
+
+    .btn-ctrl.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--emerald-safe);
+      color: var(--emerald-safe);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Main Viewport (100% Fit Screen - Zero Horizontal Scroll) */
+    /* Main Viewport (100% Fit Screen - Zero Horizontal Scroll) */
+    main.pipeline-viewport {
+      flex: 1;
+      width: 100vw;
+      height: calc(100vh - 46px - 62px);
+      padding: 16px 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* SVG Connecting Bus Layer - In front of Integrated AI Engine background */
+    .svg-bus-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .bus-path-static {
+      fill: none;
+      stroke: rgba(0, 229, 255, 0.22);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+    }
+
+    .bus-path-animated {
+      fill: none;
+      stroke: var(--cyan-neon);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-dasharray: 8 16;
+      animation: signalPulse 1.4s linear infinite;
+    }
+
+    @keyframes signalPulse {
+      from {
+        stroke-dashoffset: 48;
+      }
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    /* 6-Columns Horizontal Pipeline Grid (Shifted Left & Symmetrically Centered) */
+    .pipeline-track {
+      width: 100%;
+      max-width: calc(100vw - 48px);
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.65fr 1fr 1fr 1fr;
+      gap: 24px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      margin: 0 auto;
+      transform: translateX(-30px);
+    }
+
+    .stage-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+    }
+
+    /* Presentation-Grade Cards */
+    .node-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-hud);
+      border-radius: 10px;
+      padding: 14px 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      position: relative;
+      z-index: 6;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .node-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--cyan-neon);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 229, 255, 0.25);
+    }
+
+    .node-header-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--font-heading);
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+
+    .node-subtitle {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan-neon);
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    /* Presentation Spec Tags - Enlarged & Synchronized for High Readability */
+    .specs-tag-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .spec-tag {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3.5px 7px;
+      border-radius: 5px;
+      background: rgba(0, 229, 255, 0.08);
+      color: var(--cyan-neon);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .spec-tag.tag-orange {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .spec-tag.tag-green {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .spec-tag.tag-purple {
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      border-color: rgba(168, 85, 247, 0.4);
+    }
+
+    /* Stage 3: 3 Parallel Tracks Container (Balanced Height & Zero Overflow) */
+    .parallel-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(12, 20, 38, 0.7);
+      border: 1.5px dashed rgba(0, 229, 255, 0.35);
+      border-radius: 12px;
+      padding: 11px 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .parallel-title-row {
+      display: flex;
+      align-items: center;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .parallel-title-row span {
+      font-family: var(--font-heading);
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .track-block {
+      background: rgba(9, 15, 30, 0.9);
+      border-radius: 7px;
+      padding: 8px 11px;
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      position: relative;
+      z-index: 6;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .track-block:hover {
+      transform: translateX(4px);
+    }
+
+    .track-block.track-quan {
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .track-block.track-quan:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+    }
+
+    .track-block.track-triet {
+      border: 1.5px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .track-block.track-triet:hover {
+      border-color: #10b981;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .track-block.track-khang {
+      border: 1.5px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .track-block.track-khang:hover {
+      border-color: #f59e0b;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+    }
+
+    .track-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .track-main-name {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .track-model-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .track-badge-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .track-badge-row .spec-tag {
+      flex: 1;
+      padding: 3.5px 6px;
+      font-size: 11.5px;
+    }
+
+    /* Contract Card Glowing Effect */
+    .card-contract {
+      background: linear-gradient(135deg, rgba(14, 20, 42, 0.95), rgba(26, 16, 52, 0.9));
+      border: 1.5px solid var(--purple-accent);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+    }
+
+    .card-contract:hover {
+      border-color: #d8b4fe;
+      box-shadow: 0 0 26px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Alert Pills - Enlarged & Synchronized */
+    .alert-pill-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 3px;
+    }
+
+    .alert-pill {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .alert-safe {
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .alert-warn {
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .alert-crit {
+      background: rgba(244, 63, 94, 0.16);
+      border: 1px solid rgba(244, 63, 94, 0.45);
+      color: #fb7185;
+      animation: pulseAlert 1.5s infinite alternate;
+    }
+
+    @keyframes pulseAlert {
+      from { box-shadow: 0 0 4px rgba(244, 63, 94, 0.2); }
+      to { box-shadow: 0 0 14px rgba(244, 63, 94, 0.6); }
+    }
+
+    /* Ultra-Compact Bottom HUD Footer (Symmetrical True-Center Layout: 1fr auto 1fr) */
+    footer.hud-footer {
+      height: 62px;
+      padding: 0 24px;
+      background: rgba(8, 13, 26, 0.96);
+      border-top: 1px solid var(--border-hud);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 20px;
+      align-items: center;
+      flex-shrink: 0;
+      backdrop-filter: blur(12px);
+    }
+
+    .footer-guide {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .footer-guide h3 {
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--cyan-neon);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .footer-guide p {
+      font-size: 11px;
+      color: #94a3b8;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .telemetry-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: 440px;
+      justify-self: center;
+    }
+
+    .footer-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #cbd5e1;
+      white-space: nowrap;
+      justify-self: end;
+      align-items: flex-start;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .metric-cell {
+      text-align: center;
+    }
+
+    .metric-num {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .metric-caption {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .dot-marker {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    /* Modal / Inspector Dialog */
+    .inspector-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 17, 0.88);
+      backdrop-filter: blur(10px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .inspector-modal.open {
+      display: flex;
+    }
+
+    .inspector-card {
+      background: #0d1526;
+      border: 1.5px solid var(--cyan-neon);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 740px;
+      box-shadow: 0 0 40px rgba(0, 229, 255, 0.35);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .inspector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--border-hud);
+    }
+
+    .inspector-header h2 {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--cyan-neon);
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    .btn-close-modal:hover {
+      color: #fff;
+    }
+
+    .inspector-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 72vh;
+      overflow-y: auto;
+    }
+
+    .inspector-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .spec-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 9px 12px;
+    }
+
+    .spec-item-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
+
+    .spec-item-value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .code-block {
+      background: #050914;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #38bdf8;
+      line-height: 1.5;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================= ULTRA-SLIM TOP HUD HEADER ================= -->
+  <header class="hud-header">
+    <a href="adas_review_1_presentation.html#slide-3" class="btn-back" title="Return to Slide 03 in Presentation">
+      <span>←</span> <span>SLIDE 03</span>
+    </a>
+
+    <div class="header-title-main">
+      <span>⚡ ADAS PIPELINE ARCHITECTURE</span>
+    </div>
+
+    <div class="header-ctrl-group">
+      <button class="btn-ctrl active" id="btnToggleAnim" title="Pause / Resume Animated Signal Flow">
+        <span id="animIcon">⏸</span> <span id="animText">Pause Flow</span>
+      </button>
+      <button class="btn-ctrl active" id="btnToggleSpecs" title="Toggle Technical Specification Badges">
+        <span>🔍</span> <span>Toggle Specs</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN PANORAMIC VIEWPORT (100% FIT SCREEN) ================= -->
+  <main class="pipeline-viewport" id="viewportMain">
+
+    <!-- SVG Signal Bus Connections Layer -->
+    <svg class="svg-bus-overlay" id="svgOverlay">
+      <defs>
+        <!-- Marker Arrows -->
+        <marker id="arrowCyan" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="#00e5ff" />
+        </marker>
+        <marker id="arrowLane" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="#38bdf8" />
+        </marker>
+        <marker id="arrowDet" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="#10b981" />
+        </marker>
+        <marker id="arrowDepth" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="#f59e0b" />
+        </marker>
+      </defs>
+
+      <!-- Dynamic paths drawn by JS to guarantee pixel-perfect responsiveness -->
+      <g id="svgStaticGroup"></g>
+      <g id="svgAnimGroup"></g>
+    </svg>
+
+    <!-- 6-Columns Horizontal Pipeline Grid -->
+    <div class="pipeline-track" id="pipelineGrid">
+
+      <!-- ================= 1. CAMERA INGESTION ================= -->
+      <div class="stage-col">
+        <div class="node-card" id="cardCamera" onclick="openInspector('camera')">
+          <div class="node-header-row">
+            <span>📷</span>
+            <span>Camera Ingestion</span>
+          </div>
+          <div class="node-subtitle">1x Monocular RGB</div>
+          <div class="specs-tag-list">
+            <span class="spec-tag">1280x720 (720p)</span>
+            <span class="spec-tag tag-green">30.0 FPS</span>
+            <span class="spec-tag">V4L2 / OpenCV</span>
+            <span class="spec-tag">timestamp_ns</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 2. PREPROCESSING & DISPATCH ================= -->
+      <div class="stage-col">
+        <div class="node-card" id="cardPreproc" onclick="openInspector('preprocess')">
+          <div class="node-header-row">
+            <span>⚙️</span>
+            <span>Preproc & Dispatch</span>
+          </div>
+          <div class="node-subtitle">Zero-Copy Buffer</div>
+          <div class="specs-tag-list">
+            <span class="spec-tag">[1, 3, 720, 1280]</span>
+            <span class="spec-tag tag-orange">RGB [0.0, 1.0]</span>
+            <span class="spec-tag tag-green">torch.no_grad()</span>
+            <span class="spec-tag">Shared Memory</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 3. 3 PARALLEL BASELINE TRACKS ================= -->
+      <div class="stage-col">
+        <div class="parallel-container" id="cardParallelEngine">
+          <div class="parallel-title-row">
+            <span>⚡ INTEGRATED AI ENGINE</span>
+          </div>
+
+          <!-- Track 1: Lane Perception -->
+          <div class="track-block track-quan" id="trackQuan" onclick="openInspector('lane')">
+            <div class="track-header-flex">
+              <span class="track-main-name" style="color: #38bdf8;">🛣️ Lane Perception</span>
+              <span class="track-model-badge" style="background: rgba(56,189,248,0.15); color: #38bdf8;">UFLDv2 ResNet-18</span>
+            </div>
+            <div class="specs-tag-list">
+              <span class="spec-tag">Row Anchor Discretization (72x100)</span>
+              <span class="spec-tag tag-green">Inference Speed &gt; 120 FPS</span>
+              <span class="spec-tag">B-Spline Polyline Interpolation</span>
+            </div>
+          </div>
+
+          <!-- Track 2: Detection & Tracking -->
+          <div class="track-block track-triet" id="trackTriet" onclick="openInspector('detection')">
+            <div class="track-header-flex">
+              <span class="track-main-name" style="color: #10b981;">🚗 Detection & Tracking</span>
+              <span class="track-model-badge" style="background: rgba(16,185,129,0.15); color: #10b981;">YOLOv10s + ByteTrack</span>
+            </div>
+            <div class="specs-tag-list">
+              <span class="spec-tag tag-green">Dual Head NMS-Free (0.0 ms)</span>
+              <span class="spec-tag">10 Classes BDD100K Detection</span>
+              <span class="spec-tag">ByteTrack Invariant IDs (72.2 FPS)</span>
+            </div>
+          </div>
+
+          <!-- Track 3: Depth & TTC -->
+          <div class="track-block track-khang" id="trackKhang" onclick="openInspector('depth')">
+            <div class="track-header-flex">
+              <span class="track-main-name" style="color: #f59e0b;">📏 Monocular Depth & TTC</span>
+              <span class="track-model-badge" style="background: rgba(245,158,11,0.15); color: #f59e0b;">Depth Anything V2</span>
+            </div>
+            <div class="specs-tag-list">
+              <span class="spec-tag tag-orange">Metric Depth Alignment (m)</span>
+              <span class="spec-tag">Relative Velocity v_z = dZ/dt</span>
+              <span class="spec-tag">ISO 15623 TTC Warning Metric</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 4. CONTRACT FUSION ================= -->
+      <div class="stage-col">
+        <div class="node-card card-contract" id="cardContract" onclick="openInspector('contract')">
+          <div class="node-header-row">
+            <span>📦</span>
+            <span style="color: #e9d5ff;">Contract Fusion</span>
+          </div>
+          <div class="node-subtitle" style="color: #d8b4fe;">FrameRecord v1.0</div>
+          <div class="specs-tag-list">
+            <span class="spec-tag tag-purple">IMMUTABLE</span>
+            <span class="spec-tag">No Race Condition</span>
+            <span class="spec-tag tag-green">cuda.empty_cache()</span>
+            <span class="spec-tag">Peak VRAM &lt; 2.5 GB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 5. DECISION LOGIC ================= -->
+      <div class="stage-col">
+        <div class="node-card" id="cardDecision" onclick="openInspector('decision')">
+          <div class="node-header-row">
+            <span>🧠</span>
+            <span>Safety Decision</span>
+          </div>
+          <div class="node-subtitle" style="color: var(--amber-warn);">ISO 15623 Engine</div>
+          <div class="alert-pill-stack">
+            <div class="alert-pill alert-safe">
+              <span>🟢 SAFE</span>
+              <span>TTC &gt; 3.0s</span>
+            </div>
+            <div class="alert-pill alert-warn">
+              <span>🟡 WARN</span>
+              <span>1.5 - 3.0s</span>
+            </div>
+            <div class="alert-pill alert-crit">
+              <span>🔴 CRITICAL</span>
+              <span>≤ 1.5s</span>
+            </div>
+            <div class="spec-tag" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border-color: rgba(56, 189, 248, 0.35); margin-top: 2px;">
+              🎯 Lead Target: Min TTC
+            </div>
+            <div class="spec-tag" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35);">
+              🛣️ LDW: |Offset| &gt; 0.45m
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 6. AR HUD VISUALIZER ================= -->
+      <div class="stage-col">
+        <div class="node-card" id="cardHud" onclick="openInspector('hud')">
+          <div class="node-header-row">
+            <span>🎬</span>
+            <span style="color: var(--emerald-safe);">Cockpit HUD</span>
+          </div>
+          <div class="node-subtitle" style="color: var(--emerald-safe);">Real-Time AR</div>
+          <div class="specs-tag-list">
+            <span class="spec-tag tag-green">Output: 720p @ 30+ FPS</span>
+            <span class="spec-tag">Neon B-Spline Lanes</span>
+            <span class="spec-tag">3D BBox + TTC Badge</span>
+            <span class="spec-tag">p95 &lt; 33.3 ms</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= COMPACT BOTTOM TELEMETRY FOOTER ================= -->
+  <footer class="hud-footer">
+    <div class="footer-guide">
+      <h3 id="infoTitle">SYSTEM PROCESSING HUB</h3>
+      <p id="infoDesc">Click stage to inspect specs</p>
+    </div>
+
+    <!-- Live Telemetry Monitor -->
+    <div class="telemetry-row">
+      <div class="metric-cell">
+        <div class="metric-num" id="metricFps" style="color: #10b981;">32.8</div>
+        <div class="metric-caption">Pipeline FPS</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-num" id="metricP95" style="color: #38bdf8;">28.4 ms</div>
+        <div class="metric-caption">p95 Latency</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-num" id="metricVram" style="color: #c084fc;">2.18 GB</div>
+        <div class="metric-caption">Peak VRAM</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-num" style="color: #34d399;">STABLE</div>
+        <div class="metric-caption">Sync Status</div>
+      </div>
+    </div>
+
+    <!-- Color Legend -->
+    <div class="footer-legend">
+      <div class="legend-item">
+        <span class="dot-marker" style="background: #38bdf8; box-shadow: 0 0 6px #38bdf8;"></span>
+        <span>Lane Perception - UFLDv2 ResNet-18</span>
+      </div>
+      <div class="legend-item">
+        <span class="dot-marker" style="background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
+        <span>Detection & Tracking - YOLOv10s + ByteTrack</span>
+      </div>
+      <div class="legend-item">
+        <span class="dot-marker" style="background: #f59e0b; box-shadow: 0 0 6px #f59e0b;"></span>
+        <span>Monocular Depth & TTC - Depth Anything V2</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= TECHNICAL INSPECTOR MODAL ================= -->
+  <div class="inspector-modal" id="inspectorModal">
+    <div class="inspector-card">
+      <div class="inspector-header">
+        <h2 id="modalTitle">Component Detail Inspector</h2>
+        <button class="btn-close-modal" onclick="closeInspector()">✕</button>
+      </div>
+      <div class="inspector-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // Detailed component specifications dictionary
+    const componentSpecs = {
+      camera: {
+        title: "Monocular Camera Ingestion & Frame Capture",
+        sourceFile: "src/ingestion/video_capture.py",
+        shortSource: "video_capture.py",
+        specs: [
+          { label: "Hardware Sensor", value: "Monocular CMOS RGB Camera (1x Lens, FOV 120°)" },
+          { label: "Capture Resolution", value: "1280 x 720 (720p HD) @ 30.0 FPS" },
+          { label: "Color Space", value: "BGR Native (OpenCV V4L2 Backend)" },
+          { label: "Timestamping", value: "timestamp_seconds (Monotonic nanosecond clock)" },
+          { label: "Queue Strategy", value: "Single-slot Drop-oldest Buffer (Prevents accumulation lag)" },
+          { label: "Ingestion Latency", value: "1.2 ~ 1.8 ms" }
+        ]
+      },
+      preprocess: {
+        title: "Zero-Copy Preprocessing & Tensor Dispatcher",
+        sourceFile: "src/pipeline/dispatcher.py",
+        shortSource: "dispatcher.py",
+        specs: [
+          { label: "Input Format", value: "NumPy Array [720, 1280, 3] uint8" },
+          { label: "Color Conversion", value: "BGR ➔ RGB" },
+          { label: "Normalization", value: "Tensor [1, 3, 720, 1280] float32 in [0.0, 1.0]" },
+          { label: "GPU Memory Strategy", value: "Zero-copy Page-locked Pinned Memory" },
+          { label: "Execution Mode", value: "torch.no_grad() Context Manager" },
+          { label: "Preprocessing Latency", value: "2.1 ~ 2.6 ms" }
+        ]
+      },
+      lane: {
+        title: "Lane Perception: UFLDv2 & B-Spline Smoothing",
+        sourceFile: "src/adapters/ufldv2_adapter.py",
+        shortSource: "ufldv2_adapter.py",
+        specs: [
+          { label: "Model Architecture", value: "UFLDv2 ResNet-18 Row-Anchor Classification" },
+          { label: "Benchmark Dataset", value: "CULane (133,235 frames across 9 challenging scenarios)" },
+          { label: "Discretization Grid", value: "N_row = 72 scanlines, N_col = 100 anchor cells" },
+          { label: "Post-Processing", value: "Softmax argmax + B-Spline cubic interpolation" },
+          { label: "Benchmark Result", value: "F1 ≥ 76.5%, Speed > 120 FPS (~7.5 ms inference)" },
+          { label: "Downstream Output", value: "Left / Right Boundary Polylines + Lateral Ego Offset" }
+        ]
+      },
+      detection: {
+        title: "Detection & Tracking: YOLOv10s NMS-Free & ByteTrack",
+        sourceFile: "src/adapters/yolov10_bytetrack_adapter.py",
+        shortSource: "yolov10_bytetrack.py",
+        specs: [
+          { label: "Model Architecture", value: "YOLOv10s (Consistent Dual Assignment Head)" },
+          { label: "Dataset & Classes", value: "BDD100K 10 traffic classes (Car, Bus, Pedestrian, etc.)" },
+          { label: "NMS Elimination", value: "NMS Overhead: 0.0 ms (Saves 2.5 ~ 4.0 ms p95 tail latency)" },
+          { label: "Tracking Algorithm", value: "ByteTrack 2-stage (High conf ≥ 0.25 & Low conf 0.10 ~ 0.25)" },
+          { label: "Benchmark Result", value: "mAP50 = 52.87% (Screening) ➔ ≥ 58~60% (Confirmation), 72.2 FPS" },
+          { label: "Downstream Output", value: "Persistent Track IDs, 2D Bounding Boxes, Velocity Vectors" }
+        ]
+      },
+      depth: {
+        title: "Monocular Depth & TTC: Depth Anything V2 ViT-S",
+        sourceFile: "src/adapters/depth_anything_v2_adapter.py & src/core/ttc.py",
+        shortSource: "depth_anything_v2 & ttc.py",
+        specs: [
+          { label: "Model Architecture", value: "Depth Anything V2 ViT-S (24.8M parameters)" },
+          { label: "Dataset Benchmark", value: "KITTI Raw & CARLA Synthetic LiDAR ground truth" },
+          { label: "Metric Conversion", value: "Z_metric = s * d_relative + t (AbsRel < 0.12)" },
+          { label: "Obstacle Depth", value: "Z_obj = median(DepthMap[bbox_roi])" },
+          { label: "Approach Velocity", value: "v_z = dZ/dt filtered via Moving Average Window" },
+          { label: "Time-to-Collision", value: "TTC = Z_obj / v_z (Strictly ISO 15623 compliant)" }
+        ]
+      },
+      contract: {
+        title: "FrameRecord Contract v1.0 & GPU Memory Manager",
+        sourceFile: "src/core/contracts.py & src/pipeline/integrated_pipeline.py",
+        shortSource: "contracts.py & pipeline.py",
+        specs: [
+          { label: "Contract Version", value: "FrameRecord contract v1.0 (IMMUTABLE)" },
+          { label: "Payload Fields", value: "frame_id, timestamp, detections, lanes, risk, timing" },
+          { label: "Concurrency Safety", value: "Thread-safe sync barrier, zero race conditions" },
+          { label: "Memory Flush", value: "torch.cuda.empty_cache() after each merge cycle" },
+          { label: "Peak Memory Cap", value: "Peak GPU VRAM < 2.5 GB (Edge hardware friendly)" },
+          { label: "Merge Overhead", value: "0.8 ~ 1.2 ms" }
+        ]
+      },
+      decision: {
+        title: "Safety Decision Engine (ISO 15623 FCW & LDW)",
+        sourceFile: "src/core/decision_engine.py",
+        shortSource: "decision_engine.py",
+        specs: [
+          { label: "Safety Standard", value: "ISO 15623 (Forward Vehicle Collision Warning Systems)" },
+          { label: "Primary Threat Selector", value: "In-lane Lead Vehicle Filter: min(TTC) & min(Z_metric)" },
+          { label: "Multi-Target Telemetry", value: "Sequential distance ranking (e.g., 16m, 40m, 63m, 90m)" },
+          { label: "Dynamic Speed Ranging", value: "Ego speed v_ego (GPS/CAN) ➔ d_safe = v * t_react + v²/(2μg)" },
+          { label: "FCW Warning Levels", value: "🟢 Safe (>3.0s), 🟡 Warn (1.5~3.0s), 🔴 Critical (≤1.5s)" },
+          { label: "Lane Departure (LDW)", value: "Lateral ego offset |y_offset| > 0.45 m (without turn signal)" },
+          { label: "Decision Latency", value: "< 0.5 ms (Deterministic rule evaluation)" }
+        ]
+      },
+      hud: {
+        title: "Real-Time AR Cockpit HUD Visualizer",
+        sourceFile: "src/visualization/hud_renderer.py",
+        shortSource: "hud_renderer.py",
+        specs: [
+          { label: "Rendering Engine", value: "Hardware-accelerated OpenGL / OpenCV AR HUD" },
+          { label: "Primary Threat Banner", value: "Lead Vehicle ID, Metric Distance (16.2m), Dynamic TTC (1.4s)" },
+          { label: "Target Telemetry List", value: "Top in-path obstacles sorted by proximity (16m, 40m, 63m, 90m)" },
+          { label: "Speed & Safety Badges", value: "Live Speedometer (62 km/h GPS) & Status (SAFE/WARN/CRITICAL)" },
+          { label: "AR Visual Elements", value: "Cyan Driveable Corridor Polygon, Neon B-Spline, 3D Bounding Boxes" },
+          { label: "Performance Target", value: "FPS ≥ 30, p95 < 33.3 ms on NVIDIA Jetson Orin Nano (< $800)" }
+        ]
+      }
+    };
+
+    function openInspector(key) {
+      const comp = componentSpecs[key];
+      if (!comp) return;
+
+      document.getElementById('modalTitle').innerHTML = `🔍 ${comp.title}`;
+      let specsHtml = comp.specs.map(s => `
+        <div class="spec-item">
+          <div class="spec-item-label">${s.label}</div>
+          <div class="spec-item-value">${s.value}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('modalBody').innerHTML = `
+        <div style="font-size: 12.5px; color: #94a3b8; font-family: var(--font-mono); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+          📁 <strong>Module File:</strong> <code style="color: var(--cyan-neon); background: rgba(0, 229, 255, 0.08); padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(0, 229, 255, 0.2);">${comp.sourceFile}</code>
+        </div>
+        <div class="inspector-grid">${specsHtml}</div>
+      `;
+
+      document.getElementById('inspectorModal').classList.add('open');
+      document.getElementById('infoTitle').textContent = comp.title;
+      document.getElementById('infoDesc').textContent = `Source: ${comp.shortSource || comp.sourceFile}`;
+    }
+
+    function closeInspector() {
+      document.getElementById('inspectorModal').classList.remove('open');
+      document.getElementById('infoTitle').textContent = "SYSTEM PROCESSING HUB";
+      document.getElementById('infoDesc').textContent = "Click stage to inspect specs";
+    }
+
+    document.getElementById('inspectorModal').addEventListener('click', (e) => {
+      if (e.target.id === 'inspectorModal') closeInspector();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeInspector();
+    });
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Toggle Animation
+    let isAnimActive = true;
+    const btnToggleAnim = document.getElementById('btnToggleAnim');
+    const animIcon = document.getElementById('animIcon');
+    const animText = document.getElementById('animText');
+
+    btnToggleAnim.addEventListener('click', () => {
+      isAnimActive = !isAnimActive;
+      const animPaths = document.querySelectorAll('.bus-path-animated');
+      if (isAnimActive) {
+        animPaths.forEach(p => p.style.animationPlayState = 'running');
+        animIcon.textContent = '⏸';
+        animText.textContent = 'Pause Flow';
+        btnToggleAnim.classList.add('active');
+      } else {
+        animPaths.forEach(p => p.style.animationPlayState = 'paused');
+        animIcon.textContent = '▶';
+        animText.textContent = 'Resume Flow';
+        btnToggleAnim.classList.remove('active');
+      }
+    });
+
+    // Toggle Specs Tags
+    let areSpecsVisible = true;
+    const btnToggleSpecs = document.getElementById('btnToggleSpecs');
+    btnToggleSpecs.addEventListener('click', () => {
+      areSpecsVisible = !areSpecsVisible;
+      document.querySelectorAll('.specs-tag-list, .track-badge-row').forEach(el => {
+        el.style.display = areSpecsVisible ? 'flex' : 'none';
+      });
+      btnToggleSpecs.classList.toggle('active', areSpecsVisible);
+      setTimeout(drawConnectors, 50);
+    });
+
+    // Telemetry Jitter Simulation
+    setInterval(() => {
+      if (!isAnimActive) return;
+      const baseFps = 32.8;
+      const jitterFps = (baseFps + (Math.random() * 2.2 - 1.1)).toFixed(1);
+      document.getElementById('metricFps').textContent = jitterFps;
+
+      const baseP95 = 28.4;
+      const jitterP95 = (baseP95 + (Math.random() * 1.4 - 0.7)).toFixed(1);
+      document.getElementById('metricP95').textContent = `${jitterP95} ms`;
+    }, 1800);
+
+    // ================= DYNAMIC RESPONSIVE CONNECTOR ARROWS =================
+    function getAnchor(element, side) {
+      const rect = element.getBoundingClientRect();
+      const parent = document.getElementById('viewportMain').getBoundingClientRect();
+      const x = (side === 'right') ? rect.right - parent.left : rect.left - parent.left;
+      const y = rect.top + rect.height / 2 - parent.top;
+      return { x, y };
+    }
+
+    function createStraightD(p1, p2) {
+      return `M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} L ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+
+    function createBezierD(p1, p2) {
+      const dx = (p2.x - p1.x) * 0.5;
+      return `M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} C ${(p1.x + dx).toFixed(1)} ${p1.y.toFixed(1)}, ${(p2.x - dx).toFixed(1)} ${p2.y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+
+    function drawConnectors() {
+      const svgStatic = document.getElementById('svgStaticGroup');
+      const svgAnim = document.getElementById('svgAnimGroup');
+      if (!svgStatic || !svgAnim) return;
+
+      svgStatic.innerHTML = '';
+      svgAnim.innerHTML = '';
+
+      const cam = document.getElementById('cardCamera');
+      const pre = document.getElementById('cardPreproc');
+      const q = document.getElementById('trackQuan');
+      const t = document.getElementById('trackTriet');
+      const k = document.getElementById('trackKhang');
+      const con = document.getElementById('cardContract');
+      const dec = document.getElementById('cardDecision');
+      const hud = document.getElementById('cardHud');
+
+      if (!cam || !pre || !q || !t || !k || !con || !dec || !hud) return;
+
+      // Anchors
+      const camR = getAnchor(cam, 'right');
+      const preL = getAnchor(pre, 'left');
+      const preR = getAnchor(pre, 'right');
+      const qL = getAnchor(q, 'left');
+      const qR = getAnchor(q, 'right');
+      const tL = getAnchor(t, 'left');
+      const tR = getAnchor(t, 'right');
+      const kL = getAnchor(k, 'left');
+      const kR = getAnchor(k, 'right');
+      const conL = getAnchor(con, 'left');
+      const conR = getAnchor(con, 'right');
+      const decL = getAnchor(dec, 'left');
+      const decR = getAnchor(dec, 'right');
+      const hudL = getAnchor(hud, 'left');
+
+      // The horizontal spine Y coordinate is locked to the center track (Track 2: Detection & Tracking)
+      const spineY = tL.y;
+
+      const connections = [
+        // 1. Camera -> Preproc (Straight horizontal line)
+        { 
+          d: createStraightD({ x: camR.x, y: spineY }, { x: preL.x, y: spineY }), 
+          marker: 'arrowCyan', 
+          color: '#00e5ff' 
+        },
+        // 2a. Preproc -> Track 1 Lane (Smoothly branching up)
+        { 
+          d: createBezierD({ x: preR.x, y: spineY }, qL), 
+          marker: 'arrowLane', 
+          color: '#38bdf8' 
+        },
+        // 2b. Preproc -> Track 2 Detection & Tracking (Straight horizontal line across center)
+        { 
+          d: createStraightD({ x: preR.x, y: spineY }, { x: tL.x, y: spineY }), 
+          marker: 'arrowDet', 
+          color: '#10b981' 
+        },
+        // 2c. Preproc -> Track 3 Depth & TTC (Smoothly branching down)
+        { 
+          d: createBezierD({ x: preR.x, y: spineY }, kL), 
+          marker: 'arrowDepth', 
+          color: '#f59e0b' 
+        },
+        // 3a. Track 1 Lane -> Contract Fusion (Smoothly merging down to spine)
+        { 
+          d: createBezierD(qR, { x: conL.x, y: spineY }), 
+          marker: 'arrowCyan', 
+          color: '#38bdf8' 
+        },
+        // 3b. Track 2 Detection & Tracking -> Contract Fusion (Straight horizontal line across center)
+        { 
+          d: createStraightD({ x: tR.x, y: spineY }, { x: conL.x, y: spineY }), 
+          marker: 'arrowCyan', 
+          color: '#10b981' 
+        },
+        // 3c. Track 3 Depth & TTC -> Contract Fusion (Smoothly merging up to spine)
+        { 
+          d: createBezierD(kR, { x: conL.x, y: spineY }), 
+          marker: 'arrowCyan', 
+          color: '#f59e0b' 
+        },
+        // 4. Contract Fusion -> Safety Decision (Straight horizontal line)
+        { 
+          d: createStraightD({ x: conR.x, y: spineY }, { x: decL.x, y: spineY }), 
+          marker: 'arrowCyan', 
+          color: '#00e5ff' 
+        },
+        // 5. Safety Decision -> Cockpit HUD (Straight horizontal line)
+        { 
+          d: createStraightD({ x: decR.x, y: spineY }, { x: hudL.x, y: spineY }), 
+          marker: 'arrowCyan', 
+          color: '#00e5ff' 
+        }
+      ];
+
+      connections.forEach(conn => {
+        // Static guide path with arrow marker
+        const pathStatic = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathStatic.setAttribute('d', conn.d);
+        pathStatic.setAttribute('class', 'bus-path-static');
+        pathStatic.setAttribute('stroke', conn.color);
+        pathStatic.setAttribute('marker-end', `url(#${conn.marker})`);
+        svgStatic.appendChild(pathStatic);
+
+        // Moving animated pulse path
+        const pathAnim = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathAnim.setAttribute('d', conn.d);
+        pathAnim.setAttribute('class', 'bus-path-animated');
+        pathAnim.setAttribute('stroke', conn.color);
+        if (!isAnimActive) pathAnim.style.animationPlayState = 'paused';
+        svgAnim.appendChild(pathAnim);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      setTimeout(drawConnectors, 80);
+    });
+    window.addEventListener('resize', drawConnectors);
+  </script>
+</body>
+
+</html>

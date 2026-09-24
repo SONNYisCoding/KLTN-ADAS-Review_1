@@ -1,0 +1,3222 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FA26AI50 — Real-Time Vision ADAS: Capstone Project Review 1 (English)</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- KaTeX for Mathematical Formula Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #050811;
+      --bg-card: rgba(13, 20, 38, 0.82);
+      --bg-card-hover: rgba(22, 33, 58, 0.92);
+      --border-card: rgba(56, 189, 248, 0.25);
+      --border-card-active: rgba(0, 229, 255, 0.8);
+
+      --cyan-neon: #00e5ff;
+      --cyan-glow: rgba(0, 229, 255, 0.35);
+      --blue-accent: #38bdf8;
+      --purple-accent: #a78bfa;
+      --emerald-safe: #10b981;
+      --amber-warn: #f59e0b;
+      --rose-alert: #f43f5e;
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-sub: #64748b;
+
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(0, 229, 255, 0.09) 0%, transparent 45%),
+        radial-gradient(circle at 90% 85%, rgba(167, 139, 250, 0.09) 0%, transparent 45%),
+        linear-gradient(to bottom, rgba(30, 41, 59, 0.35) 1px, transparent 1px),
+        linear-gradient(to right, rgba(30, 41, 59, 0.35) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+    }
+
+    /* Top Progress Bar */
+    #topProgressBar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--cyan-neon), var(--purple-accent));
+      width: 0%;
+      z-index: 1000;
+      transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px var(--cyan-neon);
+    }
+
+    /* HUD Header */
+    header.hud-header {
+      position: fixed;
+      top: 4px;
+      left: 0;
+      right: 0;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(5, 8, 17, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 100;
+    }
+
+    .hud-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-code {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--cyan-neon);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      letter-spacing: 0.5px;
+    }
+
+    .hud-project-name {
+      font-family: var(--font-heading);
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: 0.2px;
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-hud {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-main);
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-hud:hover {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: var(--cyan-neon);
+      color: var(--cyan-neon);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    }
+
+    .btn-hud.active {
+      background: var(--cyan-neon);
+      color: #060913;
+      font-weight: 700;
+      border-color: var(--cyan-neon);
+    }
+
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 0 8px;
+    }
+
+    .slide-counter span {
+      color: var(--cyan-neon);
+      font-weight: 700;
+    }
+
+    /* Viewport */
+    #viewport {
+      position: absolute;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 38px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slide {
+      position: absolute;
+      width: 96%;
+      max-width: 1520px;
+      height: 94%;
+      max-height: 860px;
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border-card);
+      border-radius: 16px;
+      padding: 24px 34px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(16px) scale(0.985);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      overflow-y: hidden;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Slide Header */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    .slide-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .slide-num-badge {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--cyan-neon);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .slide-title {
+      font-family: var(--font-heading);
+      font-size: clamp(22px, 1.8vw, 27px);
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .slide-subtitle {
+      font-size: clamp(13px, 1.0vw, 14.5px);
+      color: var(--text-muted);
+    }
+
+    .slide-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+    }
+
+    /* Slide Body */
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+      justify-content: space-between;
+    }
+
+    /* Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: var(--border-card-active);
+      background: var(--bg-card-hover);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .card.track-quan {
+      border-top: 3px solid #38bdf8;
+    }
+
+    .card.track-triet {
+      border-top: 3px solid #10b981;
+    }
+
+    .card.track-khang {
+      border-top: 3px solid #f59e0b;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: clamp(16.5px, 1.3vw, 19.5px);
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-member {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .badge-quan {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .badge-triet {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-khang {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Scaled-up Bullet Lists (High Visual Readability) */
+    ul.bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      font-size: clamp(14px, 1.1vw, 16px);
+      line-height: 1.55;
+    }
+
+    ul.bullet-list li {
+      position: relative;
+      padding-left: 18px;
+      color: #cbd5e1;
+    }
+
+    ul.bullet-list li::before {
+      content: "▹";
+      position: absolute;
+      left: 0;
+      color: var(--cyan-neon);
+      font-weight: bold;
+    }
+
+    /* Visual Feature Item Card inside Slide 13 / Deliverables */
+    .deliverable-item {
+      background: rgba(10, 16, 32, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 11px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .deliverable-item:hover {
+      background: rgba(0, 229, 255, 0.08);
+      border-color: rgba(0, 229, 255, 0.3);
+    }
+
+    .del-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .del-name {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .del-desc {
+      font-size: 14.5px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    /* Metric Boxes */
+    .metric-box {
+      background: rgba(0, 229, 255, 0.05);
+      border: 1px dashed rgba(0, 229, 255, 0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      margin-top: auto;
+    }
+
+    .metric-item {
+      text-align: center;
+    }
+
+    .metric-val {
+      font-family: var(--font-mono);
+      font-size: clamp(17px, 1.35vw, 20px);
+      font-weight: 700;
+      color: var(--cyan-neon);
+    }
+
+    .metric-lbl {
+      font-size: 11.5px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Tables */
+    table.hud-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: clamp(13px, 1.0vw, 14.5px);
+      margin-top: 2px;
+    }
+
+    table.hud-table th {
+      background: rgba(30, 41, 59, 0.7);
+      color: var(--cyan-neon);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      text-align: left;
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+      letter-spacing: 0.5px;
+    }
+
+    table.hud-table td {
+      padding: 5px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      vertical-align: middle;
+      line-height: 1.35;
+    }
+
+    table.hud-table tr:hover td {
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    /* Badges */
+    .badge-safe {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border: 1px solid #10b981;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12.5px;
+    }
+
+    .badge-warn {
+      background: rgba(245, 158, 11, 0.2);
+      color: #f59e0b;
+      border: 1px solid #f59e0b;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12.5px;
+    }
+
+    .badge-alert {
+      background: rgba(244, 63, 94, 0.2);
+      color: #f43f5e;
+      border: 1px solid #f43f5e;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12.5px;
+    }
+
+    /* Evidence Badges (Papers & Datasets) */
+    .card-evidence-wrap {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .badge-evidence {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .badge-evidence-paper {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .badge-evidence-paper:hover {
+      background: rgba(56, 189, 248, 0.28);
+      color: #ffffff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+
+    .badge-evidence-dataset {
+      background: rgba(167, 139, 250, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(167, 139, 250, 0.4);
+    }
+
+    .badge-evidence-dataset:hover {
+      background: rgba(167, 139, 250, 0.28);
+      color: #ffffff;
+      border-color: #c084fc;
+      box-shadow: 0 0 10px rgba(167, 139, 250, 0.4);
+    }
+
+    .badge-evidence-std {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .badge-evidence-std:hover {
+      background: rgba(16, 185, 129, 0.28);
+      color: #ffffff;
+      border-color: #34d399;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+
+    .badge-potential-report {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 11px;
+      border-radius: 5px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-decoration: none;
+      color: var(--purple-accent);
+      background: rgba(168, 85, 247, 0.14);
+      border: 1.2px solid rgba(168, 85, 247, 0.5);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.2);
+    }
+
+    .badge-potential-report:hover {
+      background: rgba(168, 85, 247, 0.3);
+      color: #ffffff;
+      border-color: var(--purple-accent);
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.6);
+      transform: translateY(-1px) scale(1.02);
+    }
+
+    .badge-paper-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1.5px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      text-decoration: none;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .badge-paper-sm:hover {
+      background: rgba(56, 189, 248, 0.28);
+      color: #ffffff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Pipeline Diagram (Slide 03) */
+    .pipeline-diagram {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      gap: 0;
+    }
+
+    .pipeline-node {
+      background: rgba(10, 16, 30, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 9px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      margin: 0;
+    }
+
+    .pipeline-node.input-node {
+      border-color: var(--blue-accent);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .pipeline-node.output-node {
+      border-color: var(--emerald-safe);
+      background: rgba(16, 185, 129, 0.1);
+      margin: 0;
+    }
+
+    .pipeline-branches-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.8px dashed rgba(0, 229, 255, 0.55);
+      border-radius: 12px;
+      padding: 14px 14px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      box-shadow: 0 0 24px rgba(0, 229, 255, 0.1);
+      margin-top: 14px;
+      margin-bottom: 0px;
+      position: relative;
+    }
+
+    .branches-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      padding: 0 8px;
+    }
+
+    .branch-card {
+      border-radius: 8px;
+      padding: 12px 6px;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+
+    .branch-card.b-lane {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1.5px solid #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+
+    .branch-card.b-lane:hover {
+      background: rgba(56, 189, 248, 0.24);
+      border-color: #7dd3fc;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .branch-card.b-det {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1.5px solid #10b981;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .branch-card.b-det:hover {
+      background: rgba(16, 185, 129, 0.24);
+      border-color: #34d399;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .branch-card.b-depth {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1.5px solid #f59e0b;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+    }
+
+    .branch-card.b-depth:hover {
+      background: rgba(245, 158, 11, 0.24);
+      border-color: #fbbf24;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .branch-head {
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .branch-head .branch-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .branch-head .branch-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .flow-split-container, .flow-merge-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .flow-svg {
+      width: 100%;
+      display: block;
+    }
+
+    .flow-arrow-down {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-expand-full {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.28), rgba(14, 165, 233, 0.45));
+      color: #ffffff;
+      border: 1.8px solid var(--cyan-neon);
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-decoration: none;
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.55);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      animation: pulseExpandBtn 2.0s infinite alternate;
+      white-space: nowrap;
+    }
+
+    .btn-expand-full:hover {
+      background: var(--cyan-neon);
+      color: #030712;
+      border-color: #ffffff;
+      box-shadow: 0 0 28px rgba(0, 229, 255, 0.95);
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    @keyframes pulseExpandBtn {
+      0% { box-shadow: 0 0 12px rgba(0, 229, 255, 0.4), inset 0 0 8px rgba(0, 229, 255, 0.2); }
+      100% { box-shadow: 0 0 26px rgba(0, 229, 255, 0.85), inset 0 0 14px rgba(0, 229, 255, 0.35); }
+    }
+
+    /* Gantt Chart Component */
+    .gantt-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      height: 100%;
+      background: rgba(10, 16, 32, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 12px;
+      padding: 10px 18px;
+      position: relative;
+      overflow: hidden;
+      justify-content: space-between;
+    }
+
+    .gantt-header {
+      display: grid;
+      grid-template-columns: 350px 1fr 1fr 1fr 1fr;
+      gap: 8px;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+      padding-bottom: 6px;
+      font-family: var(--font-heading);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--cyan-neon);
+      text-align: center;
+    }
+
+    .gantt-header .col-task {
+      text-align: left;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+    }
+
+    .gantt-body {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      justify-content: space-between;
+      position: relative;
+      min-height: 0;
+    }
+
+    .gantt-row {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 12px;
+      align-items: center;
+      font-size: 12.5px;
+    }
+
+    .gantt-task-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .gantt-track-area {
+      position: relative;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.025);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      border-left: 1px solid rgba(255, 255, 255, 0.05);
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .gantt-track-area.milestone-track {
+      background: rgba(0, 229, 255, 0.04);
+      border: 1px dashed rgba(0, 229, 255, 0.35);
+      height: 24px;
+    }
+
+    .gantt-bar {
+      position: absolute;
+      height: 16px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+
+    .gantt-bar:hover {
+      transform: scaleY(1.15);
+      filter: brightness(1.2);
+      z-index: 15;
+    }
+
+    .gantt-bar.done {
+      background: linear-gradient(90deg, #059669, #10b981);
+      border: 1px solid #34d399;
+    }
+
+    .gantt-bar.track-triet {
+      background: linear-gradient(90deg, #047857, #10b981);
+      border: 1px solid #6ee7b7;
+    }
+
+    .gantt-bar.track-quan {
+      background: linear-gradient(90deg, #0284c7, #38bdf8);
+      border: 1px solid #7dd3fc;
+    }
+
+    .gantt-bar.track-khang {
+      background: linear-gradient(90deg, #d97706, #f59e0b);
+      border: 1px solid #fcd34d;
+    }
+
+    .gantt-bar.pipe-int {
+      background: linear-gradient(90deg, #7c3aed, #a78bfa);
+      border: 1px solid #c4b5fd;
+    }
+
+    .gantt-bar.final {
+      background: linear-gradient(90deg, #e11d48, #f43f5e);
+      border: 1px solid #fda4af;
+    }
+
+    .gantt-milestone-pin {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      transform: translateX(-50%);
+      z-index: 10;
+      padding: 2px 8px;
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      white-space: nowrap;
+    }
+
+    .pin-r1 {
+      background: rgba(0, 229, 255, 0.2);
+      border: 1px solid var(--cyan-neon);
+      color: var(--cyan-neon);
+    }
+
+    .pin-r2 {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+    }
+
+    .pin-r3 {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #f59e0b;
+    }
+
+    .pin-final {
+      background: rgba(244, 63, 94, 0.25);
+      border: 1px solid #f43f5e;
+      color: #ff8597;
+    }
+
+    .today-v-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #f43f5e;
+      box-shadow: 0 0 12px #f43f5e;
+      z-index: 14;
+      pointer-events: none;
+    }
+
+    .today-flag {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      background: #f43f5e;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+      box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+    }
+
+    /* Footer Status Bar */
+    footer.hud-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: rgba(5, 8, 17, 0.94);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 11px;
+      color: var(--text-muted);
+      z-index: 100;
+    }
+
+    .hud-status-items {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .hud-status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+    }
+
+    .dot-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald-safe);
+      box-shadow: 0 0 8px var(--emerald-safe);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      }
+
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+      }
+
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+
+    /* Speaker Notes Drawer */
+    #notesDrawer {
+      position: fixed;
+      top: 56px;
+      right: -550px;
+      width: 530px;
+      bottom: 38px;
+      background: rgba(8, 14, 28, 0.98);
+      backdrop-filter: blur(24px);
+      border-left: 1px solid var(--border-card-active);
+      box-shadow: -12px 0 45px rgba(0, 0, 0, 0.7);
+      z-index: 200;
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 22px;
+    }
+
+    #notesDrawer.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 8px;
+    }
+
+    .drawer-title {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cyan-neon);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      padding-right: 6px;
+    }
+
+    .drawer-body h4 {
+      color: #ffffff;
+      font-size: 15px;
+      margin: 0 0 10px 0;
+      border-left: 3px solid var(--cyan-neon);
+      padding-left: 8px;
+    }
+
+    .notes-section {
+      margin-top: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .notes-heading {
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .drawer-body p,
+    .drawer-body li {
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .drawer-body ul,
+    .drawer-body ol {
+      padding-left: 18px;
+      margin-bottom: 6px;
+    }
+
+    /* Overview Modal Grid */
+    #overviewModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 16, 0.95);
+      backdrop-filter: blur(24px);
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+      padding: 34px 48px;
+      overflow-y: auto;
+    }
+
+    #overviewModal.open {
+      display: flex;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .overview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .overview-card:hover {
+      border-color: var(--cyan-neon);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 229, 255, 0.25);
+    }
+
+    .overview-card.current {
+      border: 2px solid var(--cyan-neon);
+      background: rgba(0, 229, 255, 0.12);
+    }
+
+    .overview-card .num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--cyan-neon);
+      font-weight: 700;
+    }
+
+    .overview-card .title {
+      font-family: var(--font-heading);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--cyan-neon);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top Progress Bar -->
+  <div id="topProgressBar"></div>
+
+  <!-- HUD Navigation Header -->
+  <header class="hud-header">
+    <div class="hud-title-group">
+      <span class="badge-code">FA26AI50</span>
+      <span class="hud-project-name">Real-time Vision ADAS: Lane, Detection & Collision Warning</span>
+    </div>
+
+    <div class="hud-controls">
+      <button class="btn-hud" id="btnPrev" title="Previous Slide (← / Backspace)">◀ Prev</button>
+      <div class="slide-counter"><span id="currSlideNum">01</span> / <span id="totalSlideNum">15</span></div>
+      <button class="btn-hud" id="btnNext" title="Next Slide (→ / Space)">Next ▶</button>
+      <button class="btn-hud" id="btnOverview" title="Slide Overview Grid (O)">⊞ Grid</button>
+      <button class="btn-hud" id="btnNotes" title="Toggle Speaker Notes (N)">📝 Notes (N)</button>
+      <button class="btn-hud" id="btnFullscreen" title="Toggle Fullscreen (F)">⛶ Full</button>
+    </div>
+  </header>
+
+  <!-- Viewport for Presentation Slides -->
+  <main id="viewport">
+
+    <!-- ================= SLIDE 1: TITLE ================= -->
+    <section class="slide active" id="slide-1" data-slide="1">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 01 • Title Cover</span>
+          <h2 class="slide-title">KLTN-AI-FA26AI50_GFA26AI09 • REVIEW-1 CAPSTONE DEFENSE</h2>
+          <span class="slide-subtitle">Capstone Project Evaluation Council — Major in Artificial Intelligence</span>
+        </div>
+        <span class="slide-tag">25/09/2026</span>
+      </div>
+      <div class="slide-body" style="justify-content: center; align-items: center; text-align: center; gap: 24px;">
+        <div style="max-width: 980px; display: flex; flex-direction: column; gap: 14px;">
+          <div
+            style="font-family: var(--font-mono); font-size: 20px; color: var(--cyan-neon); letter-spacing: 1.5px; font-weight: 700;">
+            PROJECT CODE: FA26AI50
+          </div>
+          <h1
+            style="font-family: var(--font-heading); font-size: clamp(26px, 2.2vw, 34px); font-weight: 800; color: #ffffff; line-height: 1.25;">
+            REAL-TIME VISION-BASED LANE DETECTION, OBJECT DETECTION, AND COLLISION WARNING SYSTEM FOR DRIVER ASSISTANCE
+          </h1>
+          <p style="font-size: clamp(15px, 1.1vw, 17px); color: var(--text-muted); max-width: 880px; margin: 0 auto;">
+            A lightweight, vision-centric driver assistance pipeline utilizing a single RGB camera and embedded edge AI
+          </p>
+        </div>
+
+        <div
+          style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 900px; margin-top: 8px;">
+          <div class="card" style="text-align: left;">
+            <div class="card-title" style="font-size: 15px; color: var(--blue-accent);">👨‍🏫 PROJECT SUPERVISORS</div>
+            <ul class="bullet-list">
+              <li><strong>Lecturer Nguyen Xuan Huy</strong></li>
+              <li><strong>Lecturer Nguyen Quoc Trung</strong></li>
+            </ul>
+          </div>
+
+          <div class="card" style="text-align: left;">
+            <div class="card-title" style="font-size: 15px; color: var(--emerald-safe);">👥 CAPSTONE PROJECT TEAM
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Nguyen Tran Minh Quan</strong> (Leader — SE194342)</li>
+              <li><strong>Nguyen Minh Triet</strong> (Member — SE194257)</li>
+              <li><strong>Do Khang</strong> (Member — SE196305)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 2: TEAM INFO ================= -->
+    <section class="slide" id="slide-2" data-slide="2">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 02 • Team & Roles</span>
+          <h2 class="slide-title">TEAM STRUCTURE & TECHNICAL WORK ALLOCATION</h2>
+          <span class="slide-subtitle">Independent academic responsibility across three core perception & warning
+            subsystems</span>
+        </div>
+        <span class="slide-tag">Team Structure</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-3">
+          <!-- Quan -->
+          <div class="card track-quan">
+            <div class="card-header">
+              <span class="badge-member badge-quan">LEADER</span>
+              <span style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-sub);">SE194342</span>
+            </div>
+            <div class="card-title">Nguyen Tran Minh Quan</div>
+            <div style="font-size: 14px; font-weight: 600; color: #38bdf8;">🛣️ Lane Perception Track</div>
+            <ul class="bullet-list">
+              <li>Research & evaluate <strong>Lane Detection</strong> (CULane, Canny-Hough, UFLDv2).</li>
+              <li>Architect unified coordination framework <code>IntegratedPipeline</code>.</li>
+              <li>Manage synchronized codebase & data contract <code>FrameRecord v1.0</code>.</li>
+            </ul>
+            <div class="metric-box">
+              <div class="metric-item">
+                <div class="metric-val">F1 ≥ 76.5%</div>
+                <div class="metric-lbl">Target Metric</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val">&gt; 120 FPS</div>
+                <div class="metric-lbl">Inference Speed</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Triet -->
+          <div class="card track-triet">
+            <div class="card-header">
+              <span class="badge-member badge-triet">MEMBER</span>
+              <span style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-sub);">SE194257</span>
+            </div>
+            <div class="card-title">Nguyen Minh Triet</div>
+            <div style="font-size: 14px; font-weight: 600; color: #10b981;">🚗 Detection & Tracking Track</div>
+            <ul class="bullet-list">
+              <li>Research <strong>Object Detection & ByteTrack</strong> (BDD100K 10 classes, YOLOv10).</li>
+              <li>Leverage NMS-free Dual Head to eliminate post-processing latency.</li>
+              <li>Optimize 4D Pareto Trade-off ($mAP$, $p95\text{ Latency}$, $\text{FPS}$, $\text{VRAM}$).</li>
+            </ul>
+            <div class="metric-box">
+              <div class="metric-item">
+                <div class="metric-val">52.87%</div>
+                <div class="metric-lbl">mAP50 Achieved</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val">7.15 ms</div>
+                <div class="metric-lbl">Detector Latency</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Khang -->
+          <div class="card track-khang">
+            <div class="card-header">
+              <span class="badge-member badge-khang">MEMBER</span>
+              <span style="font-family: var(--font-mono); font-size: 11.5px; color: var(--text-sub);">SE196305</span>
+            </div>
+            <div class="card-title">Do Khang</div>
+            <div style="font-size: 14px; font-weight: 600; color: #f59e0b;">📏 Depth & Collision Warning Track</div>
+            <ul class="bullet-list">
+              <li>Research <strong>Monocular Metric Depth</strong> (KITTI Raw, CARLA, Depth Anything V2).</li>
+              <li>Develop approach velocity <code>v_z</code> and Time-to-Collision <code>TTC = Z / v_z</code>.</li>
+              <li>Establish 3-tier Forward Collision Warning (FCW) logic (Safe / Warning / Critical).</li>
+            </ul>
+            <div class="metric-box">
+              <div class="metric-item">
+                <div class="metric-val">AbsRel &lt; 0.10</div>
+                <div class="metric-lbl">Depth Metric</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val">TTC ≤ 1.5s</div>
+                <div class="metric-lbl">Critical FCW</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 3: PROBLEM STATEMENT ================= -->
+    <section class="slide" id="slide-3" data-slide="3">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 03 • Problem Statement</span>
+          <h2 class="slide-title">PROBLEM STATEMENT & AI PIPELINE FLOW</h2>
+          <span class="slide-subtitle">Low-cost monocular vision system replacing expensive LiDAR/Radar sensors</span>
+        </div>
+        <span class="slide-tag">Perception Flow</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <!-- Problem Context -->
+          <div class="card" style="justify-content: space-around;">
+            <div class="card-title">🎯 Real-World Problem & Objectives</div>
+            <ul class="bullet-list">
+              <li><strong>Accidents & Phantom Braking</strong>: Road collisions caused by distraction; expensive
+                Radar/LiDAR ($&gt; $5,000) frequently trigger false alarms and dangerous <strong>Phantom
+                  Braking</strong> due to mmWave reflections off metal manhole covers and bridge joints.</li>
+              <li><strong>Vision-Centric Objective</strong>: Construct a full-stack ADAS pipeline powered <strong>solely
+                  by a single RGB camera</strong>, utilizing <strong>Vision Semantics</strong> to eliminate false
+                braking triggers.</li>
+              <li><strong>Edge Hardware Cost</strong>: Optimized for embedded edge AI deployment (NVIDIA Jetson Orin
+                Nano, <strong>total hardware BOM &lt; $800</strong>), unlocking ADAS accessibility for mass-market
+                vehicles.</li>
+              <li><strong>Real-Time Constraint</strong>: Achieve strict real-time throughput <strong>≥ 30 FPS</strong>
+                and tail latency <strong>p95 &lt; 33 ms</strong> on commodity edge GPUs.</li>
+            </ul>
+          </div>
+
+          <!-- Pipeline Flow Diagram -->
+          <div class="card" style="border-color: rgba(0, 229, 255, 0.4); display: flex; flex-direction: column;">
+            <div class="card-title" style="color: var(--cyan-neon); display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px;">
+              <span style="font-family: var(--font-heading); font-size: 14px; font-weight: 800; letter-spacing: 0.4px;">⚡ ADAS Pipeline Architecture</span>
+              <a href="adas_pipeline_architecture.html" target="_blank" class="btn-expand-full" title="Open Interactive Full Horizontal Pipeline Architecture">🔗 Click to Expand Full ↗</a>
+            </div>
+
+            <div class="pipeline-diagram">
+              <!-- Input Node -->
+              <div class="pipeline-node input-node">
+                <div style="font-weight: 700; font-size: 13px; color: var(--blue-accent);">📹 INPUT STREAM (Camera)</div>
+                <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">1x Monocular RGB (720p @ 30 FPS)</div>
+              </div>
+
+              <!-- Split Connector: Direct from Camera touching the 3 cards -->
+              <div class="flow-split-container" style="height: 38px; margin: 0; line-height: 0;">
+                <svg class="flow-svg" viewBox="0 0 400 38" preserveAspectRatio="none" style="height: 38px; width: 100%; display: block;">
+                  <!-- Trunk touching bottom edge of Camera (y=0) -->
+                  <line x1="200" y1="0" x2="200" y2="18" stroke="var(--cyan-neon)" stroke-width="2.5" />
+                  <!-- Horizontal distribution bus -->
+                  <line x1="68" y1="18" x2="332" y2="18" stroke="var(--cyan-neon)" stroke-width="2.5" />
+                  <!-- Branch 1 touching Lane Perception (tip at y=37) -->
+                  <line x1="68" y1="18" x2="68" y2="27" stroke="#38bdf8" stroke-width="2.5" />
+                  <polygon points="62,25 74,25 68,37" fill="#38bdf8" />
+                  <!-- Branch 2 touching Detection & Track (tip at y=37) -->
+                  <line x1="200" y1="18" x2="200" y2="27" stroke="#10b981" stroke-width="2.5" />
+                  <polygon points="194,25 206,25 200,37" fill="#10b981" />
+                  <!-- Branch 3 touching Depth & TTC (tip at y=37) -->
+                  <line x1="332" y1="18" x2="332" y2="27" stroke="#f59e0b" stroke-width="2.5" />
+                  <polygon points="326,25 338,25 332,37" fill="#f59e0b" />
+                </svg>
+              </div>
+
+              <!-- 3 Parallel Model Cards -->
+              <div class="branches-grid">
+                <div class="branch-card b-lane">
+                  <div class="branch-head" style="color: #38bdf8;">
+                    <span class="branch-icon">🛣️</span>
+                    <span class="branch-title">Lane Perception</span>
+                  </div>
+                </div>
+
+                <div class="branch-card b-det">
+                  <div class="branch-head" style="color: #10b981;">
+                    <span class="branch-icon">🚗</span>
+                    <span class="branch-title">Detection & Track</span>
+                  </div>
+                </div>
+
+                <div class="branch-card b-depth">
+                  <div class="branch-head" style="color: #f59e0b;">
+                    <span class="branch-icon">📏</span>
+                    <span class="branch-title">Depth & TTC</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Merge Flow Connector: touching bottom of 3 cards and top of Contract Merge -->
+              <div class="flow-merge-container" style="height: 34px; margin: 0; line-height: 0;">
+                <svg class="flow-svg" viewBox="0 0 400 34" preserveAspectRatio="none" style="height: 34px; width: 100%; display: block;">
+                  <line x1="68" y1="0" x2="68" y2="16" stroke="#38bdf8" stroke-width="2.5" />
+                  <line x1="200" y1="0" x2="200" y2="16" stroke="#10b981" stroke-width="2.5" />
+                  <line x1="332" y1="0" x2="332" y2="16" stroke="#f59e0b" stroke-width="2.5" />
+                  <line x1="68" y1="16" x2="332" y2="16" stroke="var(--purple-accent)" stroke-width="2.5" />
+                  <line x1="200" y1="16" x2="200" y2="23" stroke="var(--purple-accent)" stroke-width="2.5" />
+                  <polygon points="194,21 206,21 200,33" fill="var(--purple-accent)" />
+                </svg>
+              </div>
+
+              <!-- Merge Layer (Solid border) -->
+              <div style="background: rgba(168, 85, 247, 0.14); border: 1.5px solid var(--purple-accent); border-radius: 8px; padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; margin: 0;">
+                <span style="font-size: 12px; font-weight: 700; color: #fff;">📦 Immutable Contract Merge</span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #c084fc;">FrameRecord contract v1.0</span>
+              </div>
+
+              <!-- Direct Down Connector: touching bottom of Contract Merge (y=0) and top of HUD (tip at y=37) -->
+              <div class="flow-arrow-down" style="height: 38px; margin: 0; line-height: 0;">
+                <svg width="24" height="38" viewBox="0 0 24 38" style="display: block;">
+                  <line x1="12" y1="0" x2="12" y2="26" stroke="var(--emerald-safe)" stroke-width="2.5" stroke-linecap="round" />
+                  <polygon points="6,24 18,24 12,37" fill="var(--emerald-safe)" />
+                </svg>
+              </div>
+
+              <!-- Output Node -->
+              <div class="pipeline-node output-node">
+                <div style="font-weight: 700; font-size: 12.5px; color: var(--emerald-safe);">🎬 REAL-TIME HUD & ALERTS</div>
+                <div style="display: flex; gap: 6px;">
+                  <span class="badge-safe">SAFE</span>
+                  <span class="badge-warn">WARN</span>
+                  <span class="badge-alert">CRITICAL</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 4: RQ & GAP ================= -->
+    <section class="slide" id="slide-4" data-slide="4">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 04 • Research Questions & Gap</span>
+          <h2 class="slide-title">RESEARCH QUESTIONS & ACADEMIC RESEARCH GAPS</h2>
+          <span class="slide-subtitle">Establishing scientific boundaries and core technical contributions</span>
+        </div>
+        <span class="slide-tag">Academic Gaps</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <!-- Research Questions -->
+          <div class="card" style="justify-content: space-around;">
+            <div class="card-title" style="color: var(--cyan-neon);">🎯 Research Questions (RQ)</div>
+            <ul class="bullet-list">
+              <li><strong>Main RQ</strong>: How to concurrently integrate <strong>Lane + Tracking + Metric Depth &
+                  TTC</strong> on a single RGB camera stream, achieving high accuracy while sustaining real-time
+                throughput <strong>≥ 30 FPS</strong> (tail latency <strong>p95 &lt; 33 ms</strong>)?</li>
+              <li><strong>Sub-RQ1 (Lane - Quan)</strong>: How can Row-based Anchor Classification sustain F1 &gt; 75% on
+                CULane under low-light/shadows without expensive pixel segmentation compute?</li>
+              <li><strong>Sub-RQ2 (Track - Triet)</strong>: How does NMS-free Dual Label Assignment (YOLOv10) +
+                ByteTrack quantitatively improve p95 Latency and ID persistence across BDD100K 10 classes?</li>
+              <li><strong>Sub-RQ3 (Depth - Khang)</strong>: Can Monocular Metric Depth (Depth Anything V2) achieve
+                AbsRel &lt; 0.12 to deliver early collision warnings with TTC ≥ 1.5s without LiDAR?</li>
+            </ul>
+          </div>
+
+          <!-- Research Gaps -->
+          <div class="card" style="justify-content: space-around;">
+            <div class="card-title" style="color: var(--amber-warn);">🔍 Academic Research Gaps</div>
+            <ul class="bullet-list">
+              <li><strong>1. Task Isolation Gap</strong>: Existing SOTA studies exclusively address isolated
+                sub-problems (detection only, lane only, or depth only). End-to-end unified vision ADAS remains scarce.
+              </li>
+              <li><strong>2. Latency Bottleneck Gap</strong>: Accurate Monocular Depth models are computationally heavy,
+                making real-time coupling with multi-object tracking (≥ 30 FPS) highly challenging.</li>
+              <li><strong>3. Gradient Conflict Gap</strong>: Shared-backbone multitask architectures (e.g. YOLOPv2)
+                suffer from severe gradient interference across task heads, degrading joint accuracy.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 5: RELATED WORK & SOTA ================= -->
+    <section class="slide" id="slide-5" data-slide="5">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 05 • Related Work & SOTA</span>
+          <h2 class="slide-title">RELATED WORK & SOTA BENCHMARK COMPARISON</h2>
+          <span class="slide-subtitle">Academic comparative analysis of foundation models as development
+            baselines</span>
+        </div>
+        <span class="slide-tag">Literature Benchmark</span>
+      </div>
+      <div class="slide-body" style="justify-content: center;">
+        <table class="hud-table" style="table-layout: fixed; width: 100%;">
+          <colgroup>
+            <col style="width: 24%;">
+            <col style="width: 6%;">
+            <col style="width: 21%;">
+            <col style="width: 13%;">
+            <col style="width: 12%;">
+            <col style="width: 11%;">
+            <col style="width: 13%;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Model / Publication</th>
+              <th style="text-align: center;">Year</th>
+              <th>Core Architecture / Method</th>
+              <th>Dataset</th>
+              <th>Evaluation Metrics</th>
+              <th>Achieved Results</th>
+              <th>Core Limitations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                  <strong style="color: #ffffff;">YOLOv10</strong>
+                  <a href="https://arxiv.org/abs/2405.14458" target="_blank" class="badge-paper-sm" title="Paper: YOLOv10 (arXiv 2024)">arXiv 2024 ↗</a>
+                </div>
+              </td>
+              <td style="text-align: center;">2024</td>
+              <td>NMS-free Dual Label Assignment</td>
+              <td>COCO / BDD100K</td>
+              <td>mAP@50-95, Latency</td>
+              <td>46.3% mAP, no NMS</td>
+              <td>Lacks long-term tracking ID</td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                  <strong style="color: #ffffff;">ByteTrack</strong>
+                  <a href="https://arxiv.org/abs/2110.06864" target="_blank" class="badge-paper-sm" title="Paper: ByteTrack (ECCV 2022)">ECCV 2022 ↗</a>
+                </div>
+              </td>
+              <td style="text-align: center;">2022</td>
+              <td>Low-Score Detection Association</td>
+              <td>MOT17 / MOT20</td>
+              <td>MOTA, IDF1, FPS</td>
+              <td>80.3 MOTA, 30 FPS CPU</td>
+              <td>Bound to detector BBox quality</td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                  <strong style="color: #ffffff;">UFLDv2</strong>
+                  <a href="https://arxiv.org/abs/2206.07389" target="_blank" class="badge-paper-sm" title="Paper: UFLDv2 (IEEE TPAMI 2022)">TPAMI 2022 ↗</a>
+                </div>
+              </td>
+              <td style="text-align: center;">2022</td>
+              <td>Row-based Anchor Classification</td>
+              <td>CULane, TuSimple</td>
+              <td>F1-score, FPS</td>
+              <td>76.2% F1, &gt; 150 FPS</td>
+              <td>Sensitive to sharp curves (&gt; 90°)</td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                  <strong style="color: #ffffff;">CLRNet</strong>
+                  <a href="https://arxiv.org/abs/2203.10350" target="_blank" class="badge-paper-sm" title="Paper: CLRNet (CVPR 2022)">CVPR 2022 ↗</a>
+                </div>
+              </td>
+              <td style="text-align: center;">2022</td>
+              <td>Cross Layer Feature Refinement</td>
+              <td>CULane</td>
+              <td>F1-score, FPS</td>
+              <td>79.6% F1 (SOTA)</td>
+              <td>Heavy FPN, low speed ~ 35 FPS</td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                  <strong style="color: #ffffff;">Depth Anything V2</strong>
+                  <a href="https://arxiv.org/abs/2406.09414" target="_blank" class="badge-paper-sm" title="Paper: Depth Anything V2 (arXiv 2024)">arXiv 2024 ↗</a>
+                </div>
+              </td>
+              <td style="text-align: center;">2024</td>
+              <td>Foundation Model ViT Distillation</td>
+              <td>Synthetic + Real</td>
+              <td>AbsRel, RMSE, δ1</td>
+              <td>0.075 AbsRel fine details</td>
+              <td>Relative depth, needs metric scale</td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                  <strong style="color: #ffffff;">YOLOPv2</strong>
+                  <a href="https://arxiv.org/abs/2208.11434" target="_blank" class="badge-paper-sm" title="Paper: YOLOPv2 (arXiv 2022)">arXiv 2022 ↗</a>
+                </div>
+              </td>
+              <td style="text-align: center;">2022</td>
+              <td>Panoptic Driving Shared Backbone</td>
+              <td>BDD100K</td>
+              <td>mAP, mIoU, Accuracy</td>
+              <td>3 tasks on 1 backbone</td>
+              <td>Multi-task Gradient Conflict</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 6: BASELINE MODELS ================= -->
+    <section class="slide" id="slide-6" data-slide="6">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 06 • Baseline Models</span>
+          <h2 class="slide-title">BASELINE BENCHMARK MODELS (3 INDEPENDENT TRACKS)</h2>
+          <span class="slide-subtitle">Empirical screening and establishment of two-sided scientific baselines</span>
+        </div>
+        <span class="slide-tag">Baseline Setup</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-3">
+          <!-- Quan -->
+          <div class="card track-quan">
+            <div class="card-title" style="color: #38bdf8;">🛣️ Lane Perception Track (Quan)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_baseline_verification.html#quan-baseline" target="_blank" class="badge-evidence badge-evidence-paper" title="View Baseline Evidence & Benchmarks for Lane Perception">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Baseline 1: Canny-Hough</strong> (Dataset: CULane)<br>Edge filter + trapezoidal ROI. Fast (&gt; 100 FPS) but F1 &lt; 40% (fails on glare/shadows).</li>
+              <li><strong>Baseline 2: SCNN</strong> (Dataset: CULane)<br>Sequential spatial segmentation. F1 = 71.6% but severe latency bottleneck (~7.5 FPS / 133 ms).</li>
+              <li><strong>Selected Baseline: UFLDv2 ResNet-18</strong> (Dataset: CULane)<br>Row-based anchor classification. <em>Target</em>: F1 ≥ 76.5%, Speed &gt; 120 FPS (~7.5 ms).</li>
+              <li><strong>Rationale</strong>: Breaks the trade-off dilemma between speed (Canny) and accuracy (SCNN).</li>
+            </ul>
+          </div>
+
+          <!-- Triet -->
+          <div class="card track-triet">
+            <div class="card-title" style="color: #10b981;">🚗 Detection & Tracking Track (Triet)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_baseline_verification.html#triet-baseline" target="_blank" class="badge-evidence badge-evidence-paper" title="View Baseline Evidence & Benchmarks for Detection & Tracking">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Baseline 1: YOLOv8s</strong> (Dataset: COCO / BDD100K)<br>mAP₅₀ ≈ 62.5%, but NMS post-processing adds +2.5 ~ 4.0 ms, causing p95 tail latency jitter.</li>
+              <li><strong>Baseline 2: YOLOv10n</strong> (Dataset: BDD100K 10 classes)<br>Resource lower-bound 2.27M params, fast (4.5 ms) but mAP₅₀ = 56.41% due to constrained capacity.</li>
+              <li><strong>Selected Baseline: YOLOv10s NMS-free</strong> (Dataset: BDD100K)<br>Dual Heads. <em>Target</em>: mAP₅₀ ≥ 58 ~ 60%, 140 FPS, NMS Overhead 0.0 ms.</li>
+              <li><strong>Rationale</strong>: Optimal sweet spot eliminating NMS overhead while maintaining high detection capacity.</li>
+            </ul>
+          </div>
+
+          <!-- Khang -->
+          <div class="card track-khang">
+            <div class="card-title" style="color: #f59e0b;">📏 Depth & TTC Track (Khang)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_baseline_verification.html#khang-baseline" target="_blank" class="badge-evidence badge-evidence-paper" title="View Baseline Evidence & Benchmarks for Depth & TTC">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Baseline 1: StereoSGBM</strong> (Dataset: KITTI Stereo)<br>Physical triangulation (Z = f · B / d) but requires rigid, vibration-sensitive dual-camera calibration.</li>
+              <li><strong>Baseline 2: Depth Anything V1</strong> (Dataset: KITTI Eigen)<br>Monocular vision but yields only relative depth [0, 1], lacking metric meters for TTC.</li>
+              <li><strong>Selected Baseline: Depth Anything V2 ViT-S</strong> (Dataset: KITTI &amp; CARLA)<br>Monocular Metric Depth. <em>Target</em>: Metric Z (m), AbsRel &lt; 0.12, TTC &lt; 15 ms.</li>
+              <li><strong>Rationale</strong>: Achieves metric distance sensing using a commercial single monocular camera for TTC warning.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 7: PROPOSED METHOD ================= -->
+    <section class="slide" id="slide-7" data-slide="7">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 07 • Proposed Method</span>
+          <h2 class="slide-title">PROPOSED METHODOLOGY & NOVEL CONTRIBUTIONS</h2>
+          <span class="slide-subtitle">Three independent subsystem innovations integrated via IntegratedPipeline</span>
+        </div>
+        <span class="slide-tag">Proposed Architecture</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-3">
+          <!-- Quan -->
+          <div class="card track-quan">
+            <div class="card-title" style="color: #38bdf8;">🛣️ UFLDv2 Anchor-based (Quan)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_sources_verification.html#quan-ufldv2" target="_blank" class="badge-evidence badge-evidence-paper" title="View Verification & Model/Weights for UFLDv2">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Mechanism</strong>: Row-based classification on coarse grid C × N_row × (N_col + 1), cutting
+                90% compute vs Segmentation.</li>
+              <li><strong>Innovation</strong>: B-Spline curve interpolation smoothing to eliminate cross-frame lane
+                jitter.</li>
+              <li><strong>Target</strong>: F1 ≥ 76.5%, Inference speed &gt; 120 FPS (≈ 7.5 ms).</li>
+            </ul>
+          </div>
+
+          <!-- Triet -->
+          <div class="card track-triet">
+            <div class="card-title" style="color: #10b981;">🚗 YOLOv10s + ByteTrack (Triet)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_sources_verification.html#triet-yolov10" target="_blank" class="badge-evidence badge-evidence-paper" title="View Verification & Model/Weights for YOLOv10 & ByteTrack">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>NMS-free Mechanism</strong>: Train with Dual Heads (One-to-Many + One-to-One), Inference uses
+                One-to-One only ➔ <strong>NMS completely eliminated</strong>.</li>
+              <li><strong>ByteTrack</strong>: Recovers low-confidence detections (0.1 ≤ conf &lt; 0.25) to sustain track
+                ID under partial occlusion.</li>
+              <li><strong>50ep Screening Results</strong>: mAP₅₀ = <strong>52.87%</strong>, mAP₅₀₋₉₅ =
+                <strong>31.41%</strong>, Detector <strong>7.15 ms</strong> (140 FPS), Full Track <strong>72.2
+                  FPS</strong> (p95 = <strong>15.38 ms</strong>).
+              </li>
+              <li><strong>100ep Confirmation Target</strong>: Focal Loss integration ➔ mAP₅₀ ≥ 58 ~ 60%.</li>
+            </ul>
+          </div>
+
+          <!-- Khang -->
+          <div class="card track-khang">
+            <div class="card-title" style="color: #f59e0b;">📏 Depth Anything V2 & FCW (Khang)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_sources_verification.html#khang-depth" target="_blank" class="badge-evidence badge-evidence-paper" title="View Verification & Model/Weights for Depth Anything V2 & ISO 15623">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Mechanism</strong>: ViT-S Metric Depth extracts physical distance Z (meters); object depth
+                Z_obj = median(Z[bbox]).</li>
+              <li><strong>TTC Computation</strong>: Approach velocity v_z = dZ/dt ➔ TTC = Z_obj / v_z.</li>
+              <li><strong>3-Tier FCW Alerts</strong>:
+                <br>• <span class="badge-safe">SAFE</span>: TTC &gt; 3.0s or Z &gt; 30m
+                <br>• <span class="badge-warn">WARNING</span>: 1.5s &lt; TTC ≤ 3.0s
+                <br>• <span class="badge-alert">CRITICAL</span>: TTC ≤ 1.5s (Emergency Braking)
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Pipeline Bar -->
+        <div class="card"
+          style="padding: 10px 16px; background: rgba(0, 229, 255, 0.04); border-color: rgba(0, 229, 255, 0.3);">
+          <div
+            style="font-size: 13px; color: #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span>⚡ <strong>IntegratedPipeline Framework</strong>: Standardized <code>BaseAdapter</code> encapsulation,
+              automated GPU VRAM clearing via Context Manager (Peak VRAM &lt; 2.5 GB).</span>
+            <span class="badge-code">CONTRACT V1.0 IMMUTABLE</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 8: DATASET ================= -->
+    <section class="slide" id="slide-8" data-slide="8">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 08 • Dataset & Data Engineering</span>
+          <h2 class="slide-title">DATASET & DATA ENGINEERING PIPELINES</h2>
+          <span class="slide-subtitle">Zero data leakage verification and standardized ADAS annotation pipeline</span>
+        </div>
+        <span class="slide-tag">Data Pipeline</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-3">
+          <!-- Quan -->
+          <div class="card track-quan">
+            <div class="card-title" style="color: #38bdf8;">🛣️ CULane Dataset (Quan)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_sources_verification.html#quan-culane" target="_blank" class="badge-evidence badge-evidence-dataset" title="View Verification & CULane Dataset Repository">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Scale</strong>: 133,235 video frames across 9 challenging traffic scenarios (night, glare,
+                shadow, rain).</li>
+              <li><strong>Pipeline</strong>: Parse polygon coordinates <code>.lines.txt</code> ➔ Normalize to [0.0,
+                1.0].</li>
+              <li><strong>Augmentation</strong>: Random horizontal flip, rotation ± 10°, photometric brightness/contrast
+                perturbation.</li>
+            </ul>
+          </div>
+
+          <!-- Triet -->
+          <div class="card track-triet">
+            <div class="card-title" style="color: #10b981;">🚗 BDD100K 10 Classes (Triet)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_sources_verification.html#triet-bdd100k" target="_blank" class="badge-evidence badge-evidence-dataset" title="View Verification & BDD100K Dataset Repository">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Scale</strong>: 80,000 images (70,000 train / 10.000 val) mapped to 10 standard ADAS classes.
+              </li>
+              <li><strong>100% Anti-Leakage</strong>: Built-in <code>validate_disjoint_manifests()</code> computing
+                SHA-256 hashes per image and label.</li>
+              <li><strong>Class Balancing</strong>: Applied Focal Loss & Class Weights to boost vulnerable road user
+                (VRU) detection.</li>
+            </ul>
+          </div>
+
+          <!-- Khang -->
+          <div class="card track-khang">
+            <div class="card-title" style="color: #f59e0b;">📏 KITTI Raw & CARLA (Khang)</div>
+            <div class="card-evidence-wrap">
+              <a href="adas_sources_verification.html#khang-kitti" target="_blank" class="badge-evidence badge-evidence-dataset" title="View Verification & KITTI / CARLA Repositories">🔗 Link connect source ↗</a>
+            </div>
+            <ul class="bullet-list">
+              <li><strong>Scale</strong>: Synchronized Stereo + LiDAR Point Cloud from KITTI Raw combined with 5,000
+                synthetic frames from CARLA Simulator.</li>
+              <li><strong>Pipeline</strong>: 3D-to-2D geometric perspective projection (X, Y, Z) ➔ (u, v) via camera
+                matrix K and [R | T].</li>
+              <li><strong>Safety Cutoff</strong>: Truncate LiDAR points at Z ≤ 80 m (maximum stopping distance envelope
+                at 100 km/h).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 9: EVALUATION STRATEGY ================= -->
+    <section class="slide" id="slide-9" data-slide="9">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 09 • Evaluation Strategy</span>
+          <h2 class="slide-title">EVALUATION STRATEGY, ABLATION STUDY & ERROR ANALYSIS</h2>
+          <span class="slide-subtitle">Independent quantitative evaluation metrics and systematic ablation plan</span>
+        </div>
+        <span class="slide-tag">Evaluation Plan</span>
+      </div>
+      <div class="slide-body">
+        <table class="hud-table" style="margin-bottom: 4px;">
+          <thead>
+            <tr>
+              <th style="width: 22%; white-space: nowrap;">Subsystem / Member</th>
+              <th style="width: 28%;">Primary Evaluation Metrics</th>
+              <th style="width: 18%; text-align: center; white-space: nowrap;">Formula / Standard</th>
+              <th style="width: 32%;">Technical ADAS Relevance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="white-space: nowrap;">🛣️ <strong>Quan (Lane)</strong></td>
+              <td><strong>F1-score @ IoU 0.5</strong>, Accuracy (%), FPS</td>
+              <td style="text-align: center;">$$\text{F}_1 = \frac{2 \cdot P \cdot R}{P + R}$$</td>
+              <td>Evaluates lane boundary geometric alignment, ensuring precise LDW alerts.</td>
+            </tr>
+            <tr>
+              <td style="white-space: nowrap;">🚗 <strong>Triet (Detection & Track)</strong></td>
+              <td><strong>mAP@50</strong>, <strong>mAP@50-95</strong>, <strong>p95 Latency</strong>, FPS, MOTA</td>
+              <td style="text-align: center;">$$\text{mAP} = \frac{1}{N}\sum_{i=1}^N \text{AP}_i$$</td>
+              <td>Measures 10-class object sensitivity; guarantees frame processing &lt; 33ms.</td>
+            </tr>
+            <tr>
+              <td style="white-space: nowrap;">📏 <strong>Khang (Depth & TTC)</strong></td>
+              <td><strong>AbsRel</strong>, <strong>RMSE</strong>, <strong>TTC Error (s)</strong>, FCW Accuracy</td>
+              <td style="text-align: center;">$$\text{AbsRel} = \frac{1}{M}\sum \frac{|Z - Z^*|}{Z^*}$$</td>
+              <td>Guarantees depth error &lt; 10%, triggering collision alerts at critical window.</td>
+            </tr>
+            <tr>
+              <td style="white-space: nowrap;">⚡ <strong>Entire System Pipeline</strong></td>
+              <td><strong>End-to-End Latency p95</strong>, FPS, Peak VRAM</td>
+              <td style="text-align: center;">$$T_{\text{total}} = \sum T_{\text{stages}}$$</td>
+              <td>Sustains throughput ≥ 30 FPS and Peak VRAM &lt; 2.5 GB on edge GPU.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="grid-2" style="margin-top: 4px;">
+          <div class="card" style="padding: 10px 14px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--cyan-neon);">🔬 Planned Ablation Studies</div>
+            <ul class="bullet-list" style="font-size: 12.5px;">
+              <li><strong>TR-10 (Triet)</strong>: ByteTrack threshold tuning (0.1 vs 0.2 vs 0.3) to minimize ID
+                Switches.</li>
+              <li><strong>Quan</strong>: UFLDv2 ResNet-18 vs ResNet-34 (Trade-off F1-score vs FPS).</li>
+              <li><strong>Khang</strong>: Benchmark 4 velocity filters for v_z (diff, regression, Kalman, moving avg).
+              </li>
+            </ul>
+          </div>
+          <div class="card" style="padding: 10px 14px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--rose-alert);">⚠️ Systematic Error Analysis</div>
+            <ul class="bullet-list" style="font-size: 12.5px;">
+              <li><strong>Occlusion Scenarios</strong>: Evaluate Track ID persistence via affinity cost matrix.</li>
+              <li><strong>Nighttime High-Beam Glare</strong>: Measure depth degradation and adaptive exposure recovery.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 10: PROJECT PLAN ================= -->
+    <section class="slide" id="slide-10" data-slide="10">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 10 • Project Plan & Gantt Chart</span>
+          <h2 class="slide-title">PROJECT SCHEDULE & GANTT CHART (FALL 2026)</h2>
+          <span class="slide-subtitle">Four-phase roadmap across Fall 2026 semester (09/2026 – 12/2026)</span>
+        </div>
+        <span class="slide-tag">Timeline FA26</span>
+      </div>
+      <div class="slide-body">
+        <div class="gantt-container">
+          <!-- Gantt Header (Months) -->
+          <div class="gantt-header">
+            <div class="col-task">TASK / SUBSYSTEM RESPONSIBILITY</div>
+            <div>SEPTEMBER 2026<br><span style="font-size: 10px; font-weight: normal; color: var(--text-sub);">W1 -
+                W4</span></div>
+            <div>OCTOBER 2026<br><span style="font-size: 10px; font-weight: normal; color: var(--text-sub);">W5 -
+                W8</span></div>
+            <div>NOVEMBER 2026<br><span style="font-size: 10px; font-weight: normal; color: var(--text-sub);">W9 -
+                W12</span></div>
+            <div>DECEMBER 2026<br><span style="font-size: 10px; font-weight: normal; color: var(--text-sub);">W13 - W15
+                (Final)</span></div>
+          </div>
+
+          <!-- Gantt Body -->
+          <div class="gantt-body">
+            <!-- Row 0: Top Dedicated Milestone Track -->
+            <div class="gantt-row" style="margin-bottom: 2px;">
+              <div class="gantt-task-info">
+                <span class="badge-code" style="font-size: 10px; padding: 2px 6px; color: var(--cyan-neon);">COUNCIL
+                  MILESTONES</span>
+                <strong style="color: #fff; font-size: 12px;">4 Official Evaluation Gates</strong>
+              </div>
+              <div class="gantt-track-area milestone-track">
+                <div class="gantt-milestone-pin pin-r1" style="left: 20.8%;">🚩 Review 1 (25/09)</div>
+                <div class="gantt-milestone-pin pin-r2" style="left: 45%;">🚩 Review 2 (10/2026)</div>
+                <div class="gantt-milestone-pin pin-r3" style="left: 70%;">🚩 Review 3 (11/2026)</div>
+                <div class="gantt-milestone-pin pin-final" style="left: 90%;">🏆 FINAL DEFENSE (12/2026)</div>
+              </div>
+            </div>
+
+            <!-- Row 1: Phase 1 (Research & SOTA) -->
+            <div class="gantt-row">
+              <div class="gantt-task-info">
+                <span class="badge-safe" style="font-size: 10px; padding: 1px 5px;">PH 1</span>
+                <span>SOTA Survey, Baseline & Proposal Writing</span>
+              </div>
+              <div class="gantt-track-area">
+                <div class="gantt-bar done" style="left: 0%; width: 12.5%;">01/09 - 15/09 (Done)</div>
+              </div>
+            </div>
+
+            <!-- Row 2: Dataset -->
+            <div class="gantt-row">
+              <div class="gantt-task-info">
+                <span class="badge-safe" style="font-size: 10px; padding: 1px 5px;">PH 1</span>
+                <span>Dataset Preparation (CULane, BDD100K, KITTI)</span>
+              </div>
+              <div class="gantt-track-area">
+                <div class="gantt-bar done" style="left: 8%; width: 12.8%;">10/09 - 25/09 (Done)</div>
+              </div>
+            </div>
+
+            <!-- Row 3: Triet Track -->
+            <div class="gantt-row">
+              <div class="gantt-task-info">
+                <span class="badge-triet" style="font-size: 10px; padding: 1px 5px;">Triet</span>
+                <span>YOLOv10s Confirmation 100ep & TR-10</span>
+              </div>
+              <div class="gantt-track-area">
+                <div class="gantt-bar track-triet" style="left: 21%; width: 29%;">26/09 - 31/10 (Screening 50ep ➔ 100ep)
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 4: Quan Track -->
+            <div class="gantt-row">
+              <div class="gantt-task-info">
+                <span class="badge-quan" style="font-size: 10px; padding: 1px 5px;">Quan</span>
+                <span>Train UFLDv2 ResNet-18 (CULane)</span>
+              </div>
+              <div class="gantt-track-area">
+                <div class="gantt-bar track-quan" style="left: 22%; width: 28%;">26/09 - 31/10 (Target F1 ≥ 76.5%)</div>
+              </div>
+            </div>
+
+            <!-- Row 5: Khang Track -->
+            <div class="gantt-row">
+              <div class="gantt-task-info">
+                <span class="badge-khang" style="font-size: 10px; padding: 1px 5px;">Khang</span>
+                <span>Fine-tune Metric Depth V2 & Module TTC</span>
+              </div>
+              <div class="gantt-track-area">
+                <div class="gantt-bar track-khang" style="left: 22%; width: 28%;">26/09 - 31/10 (Depth Anything V2 +
+                  ttc.py)</div>
+              </div>
+            </div>
+
+            <!-- Row 6: Multitask Integration -->
+            <div class="gantt-row">
+              <div class="gantt-task-info">
+                <span class="badge-code" style="font-size: 10px; padding: 1px 5px;">PH 3</span>
+                <span>IntegratedPipeline Assembly & TR-11 Test</span>
+              </div>
+              <div class="gantt-track-area">
+                <div class="gantt-bar pipe-int" style="left: 50%; width: 25%;">01/11 - 30/11 (Benchmark RTX 4060)</div>
+              </div>
+            </div>
+
+            <!-- Row 7: Application & Thesis -->
+            <div class="gantt-row">
+              <div class="gantt-task-info">
+                <span class="badge-alert" style="font-size: 10px; padding: 1px 5px;">PH 4</span>
+                <span>Dashboard HUD Demo & Thesis Finalization</span>
+              </div>
+              <div class="gantt-track-area">
+                <div class="gantt-bar final" style="left: 75%; width: 17%;">01/12 - 12/12 (HUD & Paper)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Legend -->
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 5px; font-size: 11px;">
+            <div style="display: flex; gap: 14px; align-items: center;">
+              <span style="display: flex; align-items: center; gap: 5px;"><span
+                  style="width: 10px; height: 10px; background: #10b981; border-radius: 2px;"></span> PH 1:
+                Completed</span>
+              <span style="display: flex; align-items: center; gap: 5px;"><span
+                  style="width: 10px; height: 10px; background: #38bdf8; border-radius: 2px;"></span> PH 2: 3-Branch
+                Training</span>
+              <span style="display: flex; align-items: center; gap: 5px;"><span
+                  style="width: 10px; height: 10px; background: #a78bfa; border-radius: 2px;"></span> PH 3: Integrated
+                Pipeline</span>
+              <span style="display: flex; align-items: center; gap: 5px;"><span
+                  style="width: 10px; height: 10px; background: #f43f5e; border-radius: 2px;"></span> PH 4: Demo &
+                Defense</span>
+            </div>
+            <div style="font-family: var(--font-mono); color: var(--cyan-neon); font-weight: 600;">
+              FALL 2026 SEMESTER • TOTAL TIMELINE: 09/2026 – 12/2026
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 11: PAPER PLAN ================= -->
+    <section class="slide" id="slide-11" data-slide="11">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 11 • Research Paper Plan</span>
+          <h2 class="slide-title">RESEARCH PAPER PUBLICATION PLAN & CORE CONTRIBUTIONS</h2>
+          <span class="slide-subtitle">International publication strategy and three fundamental scientific
+            contributions</span>
+        </div>
+        <span class="slide-tag">Publication</span>
+      </div>
+      <div class="slide-body">
+        <div class="card" style="border-color: var(--purple-accent); padding: 16px 22px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span
+              style="font-family: var(--font-mono); font-size: 12.5px; color: var(--purple-accent); font-weight: 700;">PROPOSED
+              RESEARCH PAPER</span>
+            <a href="adas_PHAN_TICH_TINH_HOC_THUAT_VA_TIEM_NANG_THUONG_MAI_KLTN_ADAS.html" target="_blank"
+              class="badge-potential-report"
+              title="Open Academic Rigor & Commercial Viability Analysis Report (Standalone Report)">POTENTIAL REPORT ↗</a>
+          </div>
+          <h3
+            style="font-family: var(--font-heading); font-size: 20px; color: #ffffff; line-height: 1.35; margin-top: 5px;">
+            "A Real-Time End-to-End Vision-Based ADAS: Integrating Lane Detection, NMS-Free Object Tracking, and
+            Monocular Depth for Forward Collision Warning"
+          </h3>
+          <div
+            style="display: flex; gap: 10px; align-items: center; margin-top: 6px; font-size: 14.5px; color: #cbd5e1;">
+            <span>Target Venues:</span>
+            <span class="badge-safe" style="font-size: 12px;">IEEE Access</span>
+            <span class="badge-code" style="font-size: 12px; color: #38bdf8;">Sensors (MDPI)</span>
+            <span style="color: var(--text-muted); font-size: 13.5px;">(Top AI & Signal Processing Conferences /
+              Journals)</span>
+          </div>
+        </div>
+
+        <div class="grid-3" style="margin-top: 4px;">
+          <!-- Contribution 1 -->
+          <div class="card" style="padding: 16px 18px; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="card-title" style="font-size: 16px; color: var(--cyan-neon);">📌 Contribution 1</span>
+                <span class="badge-code" style="color: #38bdf8; font-size: 11.5px;">ARCHITECTURE</span>
+              </div>
+              <div style="font-family: var(--font-heading); font-size: 15.5px; font-weight: 700; color: #ffffff;">
+                Contract-Driven Pipeline Architecture
+              </div>
+              <ul class="bullet-list" style="font-size: 13.5px; gap: 6px;">
+                <li>Framework <code>IntegratedPipeline</code> eliminates gradient interference present in
+                  shared-backbone networks (YOLOPv2).</li>
+                <li>Standardizes data flow via immutable <code>FrameRecord contract v1.0</code>, preventing GPU VRAM
+                  leaks.</li>
+              </ul>
+            </div>
+            <div class="metric-box" style="margin-top: 8px;">
+              <div class="metric-item">
+                <div class="metric-val" style="font-size: 15px;">Zero Conflict</div>
+                <div class="metric-lbl">Gradient Flow</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val" style="font-size: 15px;">Contract v1.0</div>
+                <div class="metric-lbl">Data Schema</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contribution 2 -->
+          <div class="card" style="padding: 16px 18px; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="card-title" style="font-size: 16px; color: var(--emerald-safe);">📌 Contribution 2</span>
+                <span class="badge-safe" style="font-size: 11.5px;">NMS-FREE BENCHMARK</span>
+              </div>
+              <div style="font-family: var(--font-heading); font-size: 15.5px; font-weight: 700; color: #ffffff;">
+                Quantitative NMS-Free Benchmark in ADAS
+              </div>
+              <ul class="bullet-list" style="font-size: 13.5px; gap: 6px;">
+                <li>First empirical benchmark combining YOLOv10 NMS-free and ByteTrack on BDD100K 10 classes.</li>
+                <li>Eliminates tail latency variance: $p95\text{ Latency} &lt; 16\text{ ms}$, throughput sustains &gt;
+                  70
+                  FPS.</li>
+              </ul>
+            </div>
+            <div class="metric-box" style="margin-top: 8px;">
+              <div class="metric-item">
+                <div class="metric-val" style="font-size: 15px;">p95 &lt; 16ms</div>
+                <div class="metric-lbl">Tail Latency</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val" style="font-size: 15px;">&gt; 70 FPS</div>
+                <div class="metric-lbl">Full Track Rate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contribution 3 -->
+          <div class="card" style="padding: 16px 18px; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="card-title" style="font-size: 16px; color: var(--amber-warn);">📌 Contribution 3</span>
+                <span class="badge-warn" style="font-size: 11.5px;">METRIC TTC</span>
+              </div>
+              <div style="font-family: var(--font-heading); font-size: 15.5px; font-weight: 700; color: #ffffff;">
+                Monocular Metric Depth &amp; Low-Cost TTC
+              </div>
+              <ul class="bullet-list" style="font-size: 13.5px; gap: 6px;">
+                <li>Adapts Foundation Model Depth Anything V2 to Metric Depth (meters) for a single RGB camera (&lt;
+                  $800).</li>
+                <li>Filters approach velocity noise $v_z$ to compute $TTC = \frac{Z}{v_z}$ meeting ISO 15623 safety
+                  standards.</li>
+              </ul>
+            </div>
+            <div class="metric-box" style="margin-top: 8px;">
+              <div class="metric-item">
+                <div class="metric-val" style="font-size: 15px;">Metric Depth</div>
+                <div class="metric-lbl">AbsRel &lt; 0.10</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val" style="font-size: 15px;">ISO 15623</div>
+                <div class="metric-lbl">Safety Standard</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 12: RISKS & MITIGATION ================= -->
+    <section class="slide" id="slide-12" data-slide="12">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 12 • Risk Management</span>
+          <h2 class="slide-title">RISK MANAGEMENT, CHALLENGES & MITIGATION PLAN</h2>
+          <span class="slide-subtitle">Proactive risk management across 5 critical engineering challenges</span>
+        </div>
+        <span class="slide-tag">Risk Matrix</span>
+      </div>
+      <div class="slide-body" style="justify-content: center;">
+        <div class="card" style="padding: 0; overflow: hidden; border-color: rgba(56, 189, 248, 0.25); background: rgba(10, 16, 32, 0.65);">
+          <table class="hud-table" style="font-size: 14.5px; margin: 0;">
+            <thead>
+              <tr>
+                <th style="width: 29%; padding: 13px 18px; font-size: 14.5px;">Technical Risk / Engineering Challenge</th>
+                <th style="width: 12%; text-align: center; padding: 13px 18px; font-size: 14.5px;">Impact Level</th>
+                <th style="padding: 13px 18px; font-size: 14.5px;">Root-Cause Technical Mitigation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">1. GPU VRAM Out-of-Memory running 3 models</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert" style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Encapsulated via <code>BaseAdapter</code> Context Manager for automatic VRAM clearance; select ViT-S for Depth ➔ <strong>Peak VRAM &lt; 2.5 GB</strong>.</td>
+              </tr>
+              <tr>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">2. Data Leakage between Train and Validation sets</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert" style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Automated SHA-256 hash validation <code>validate_disjoint_manifests()</code> prior to training ➔ <strong>100% Zero Leakage guarantee</strong>.</td>
+              </tr>
+              <tr>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">3. Cumulative End-to-End Latency exceeds real-time budget</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert" style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Export models to TensorRT FP16 running directly on Tensor Cores ➔ <strong>p95 Latency &lt; 33 ms</strong>.</td>
+              </tr>
+              <tr>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">4. Jitter in TTC Computation due to vehicle vibration</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-warn" style="font-size: 12.5px; padding: 4px 10px;">MEDIUM</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Integrated Kalman filtering and moving average in <code>ttc.py</code> to smooth approach velocity $v_z$.</td>
+              </tr>
+              <tr>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">5. Adverse Weather Conditions (Rain, Fog, Night Glare)</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-warn" style="font-size: 12.5px; padding: 4px 10px;">MEDIUM</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Applied weather data augmentations on BDD100K/CULane; activate adaptive dynamic confidence thresholding.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 13: EXPECTED OUTCOMES ================= -->
+    <section class="slide" id="slide-13" data-slide="13">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 13 • Expected Outcomes</span>
+          <h2 class="slide-title">EXPECTED OUTCOMES & PROJECT DELIVERABLES</h2>
+          <span class="slide-subtitle">Concrete, verifiable deliverables upon capstone project completion</span>
+        </div>
+        <span class="slide-tag">Deliverables</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-3">
+          <!-- Card 1: Models -->
+          <div class="card" style="justify-content: space-between;">
+            <div class="card-title" style="color: var(--cyan-neon);">🧠 3 Optimized Deep Learning Models</div>
+
+            <div style="display: flex; flex-direction: column; gap: 11px;">
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">yolov10s_best.pt</span>
+                  <span class="badge-safe">15.75 MB</span>
+                </div>
+                <div class="del-desc">Object Detection & Tracking (10 Classes BDD100K)</div>
+              </div>
+
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">ufldv2_culane.pth</span>
+                  <span class="badge-code" style="color: #38bdf8;">RESNET-18</span>
+                </div>
+                <div class="del-desc">Ultra-Fast Lane Detection (CULane Dataset)</div>
+              </div>
+
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">depth_anything_v2_vits.pth</span>
+                  <span class="badge-code" style="color: #f59e0b;">METRIC DEPTH</span>
+                </div>
+                <div class="del-desc">Monocular Metric Depth & TTC Computation</div>
+              </div>
+            </div>
+
+            <div class="metric-box">
+              <div class="metric-item">
+                <div class="metric-val">3 Weights</div>
+                <div class="metric-lbl">Trained Checkpoints</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val">&lt; 2.5 GB</div>
+                <div class="metric-lbl">Peak VRAM</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Codebase -->
+          <div class="card" style="justify-content: space-between;">
+            <div class="card-title" style="color: var(--emerald-safe);">📦 Standardized Software Codebase</div>
+
+            <div style="display: flex; flex-direction: column; gap: 11px;">
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">src/adas_baselines/</span>
+                  <span class="badge-safe">CLEAN ARCH</span>
+                </div>
+                <div class="del-desc">Modular Package: Lane, Detection, Depth, Tracking</div>
+              </div>
+
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">contracts/v1.0</span>
+                  <span class="badge-code">IMMUTABLE</span>
+                </div>
+                <div class="del-desc">FrameRecord Contract Schema preventing data leaks</div>
+              </div>
+
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">pytest test suite</span>
+                  <span class="badge-safe">100% PASS</span>
+                </div>
+                <div class="del-desc">Automated Unit Tests & Contract Verification Suite</div>
+              </div>
+            </div>
+
+            <div class="metric-box">
+              <div class="metric-item">
+                <div class="metric-val">Zero Leak</div>
+                <div class="metric-lbl">Disjoint Checked</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val">100% Pass</div>
+                <div class="metric-lbl">Unit Test Suite</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Demo & Report -->
+          <div class="card" style="justify-content: space-between;">
+            <div class="card-title" style="color: var(--purple-accent);">🖥️ Real-Time Demo & Paper</div>
+
+            <div style="display: flex; flex-direction: column; gap: 11px;">
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">Real-time HUD App</span>
+                  <span class="badge-safe">LIVE DEMO</span>
+                </div>
+                <div class="del-desc">Real-time HUD overlay: neon lanes, BBox, Depth map, 3-tier FCW alerts</div>
+              </div>
+
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">Artifacts & Logs</span>
+                  <span class="badge-code">CSV / JSONL</span>
+                </div>
+                <div class="del-desc">Quantitative benchmark logs: summary.json, frames.jsonl, pareto report</div>
+              </div>
+
+              <div class="deliverable-item">
+                <div class="del-top">
+                  <span class="del-name">Research Paper</span>
+                  <span class="badge-code" style="color: var(--purple-accent);">DRAFT READY</span>
+                </div>
+                <div class="del-desc">Academic research manuscript targeting IEEE Access / Sensors</div>
+              </div>
+            </div>
+
+            <div class="metric-box">
+              <div class="metric-item">
+                <div class="metric-val">≥ 30 FPS</div>
+                <div class="metric-lbl">Real-time HUD</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-val">p95 &lt; 33ms</div>
+                <div class="metric-lbl">End-to-End Latency</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 14: CONCLUSION ================= -->
+    <section class="slide" id="slide-14" data-slide="14">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge">Slide 14 • Conclusion</span>
+          <h2 class="slide-title">CONCLUSION: 8 CORE DEFENSE PILLARS</h2>
+          <span class="slide-subtitle">Comprehensive synthesis addressing the evaluation council's core criteria</span>
+        </div>
+        <span class="slide-tag">Summary</span>
+      </div>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="card" style="padding: 22px 26px; justify-content: space-between;">
+            <ul class="bullet-list" style="font-size: 15px; gap: 13px;">
+              <li><strong>1. Problem</strong>: Full-stack real-time multitask ADAS running strictly on 1x RGB camera and
+                edge AI (&lt; $800).</li>
+              <li><strong>2. Research Gap</strong>: Bridging task isolation, monocular depth latency bottleneck, and
+                multitask gradient conflict.</li>
+              <li><strong>3. Baseline</strong>: Canny-Hough / SCNN (Lane), YOLOv8s / YOLOv10n (Detection), StereoSGBM /
+                DepthAnythingV1 (Depth).</li>
+              <li><strong>4. Proposed Method</strong>: UFLDv2 + YOLOv10s NMS-free &amp; ByteTrack + Depth Anything V2
+                unified via <code>IntegratedPipeline</code>.</li>
+            </ul>
+          </div>
+
+          <div class="card" style="padding: 22px 26px; justify-content: space-between;">
+            <ul class="bullet-list" style="font-size: 15px; gap: 13px;">
+              <li><strong>5. Dataset</strong>: CULane (133k frames), BDD100K 10 classes (80k images, SHA-256 Anti-Leak
+                100%), KITTI Raw / CARLA.</li>
+              <li><strong>6. Evaluation</strong>: F1-score, mAP@50/50-95, AbsRel, TTC Error, p95 Latency, End-to-End
+                FPS, and Peak VRAM.</li>
+              <li><strong>7. Deliverables</strong>: 3 fine-tuned models, Clean Architecture package
+                <code>adas_baselines</code>, Live HUD Demo, Research Paper.
+              </li>
+              <li><strong>8. Risk Control</strong>: BaseAdapter Context Manager for VRAM control, Kalman Filter for TTC,
+                TensorRT FP16 acceleration.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SLIDE 15: THANK YOU & Q&A ================= -->
+    <section class="slide" id="slide-15" data-slide="15">
+      <div class="slide-header">
+        <div class="slide-title-wrap">
+          <span class="slide-num-badge" style="color: var(--purple-accent);">Slide 15 • Thank You & Q&A</span>
+          <h2 class="slide-title">THANK YOU FOR LISTENING & WELCOMING COUNCIL FEEDBACK</h2>
+          <span class="slide-subtitle">Oral defense and technical Q&A session with the Review 1 Evaluation
+            Council</span>
+        </div>
+        <span class="slide-tag"
+          style="background: rgba(167, 139, 250, 0.15); color: var(--purple-accent); border-color: rgba(167, 139, 250, 0.3);">Q&A
+          Session</span>
+      </div>
+      <div class="slide-body" style="justify-content: center; align-items: center; text-align: center; gap: 24px;">
+        <div style="max-width: 980px; display: flex; flex-direction: column; gap: 14px;">
+          <div
+            style="font-family: var(--font-mono); font-size: clamp(45px, 2.4vw, 36px); color: var(--cyan-neon); letter-spacing: 2px; font-weight: 700;">
+            THANK YOU FOR LISTENING!
+          </div>
+          <h1
+            style="font-family: var(--font-heading); font-size: clamp(15px, 2.4vw, 36px); font-weight: 800; color: #ffffff; line-height: 1.25;">
+            Capstone Project Team: KLTN-AI-FA26AI50_GFA26AI09
+          </h1>
+          <p
+            style="font-size: clamp(15px, 1.1vw, 17px); color: var(--text-muted); max-width: 840px; margin: 0 auto; line-height: 1.6;">
+            The team is ready to address technical questions from <br>
+            <strong>Lecturer Nguyen Trong Tai</strong>, <strong>Lecturer Le Phu Nguyen</strong> <br>
+            and the Evaluation Council.
+          </p>
+        </div>
+
+        <div
+          style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 960px; margin-top: 4px;">
+          <div class="card"
+            style="text-align: center; align-items: center; border-color: rgba(56, 189, 248, 0.4); padding: 18px 20px;">
+            <div style="font-size: 28px;">🛣️</div>
+            <div class="card-title" style="font-size: 15px; color: #38bdf8; margin-top: 4px;">LANE PERCEPTION</div>
+            <div style="font-size: 13.5px; color: var(--text-muted);">Nguyen Tran Minh Quan<br><span
+                style="color: var(--cyan-neon); font-family: var(--font-mono); font-weight: 700;">SE194342</span></div>
+          </div>
+
+          <div class="card"
+            style="text-align: center; align-items: center; border-color: rgba(16, 185, 129, 0.4); padding: 18px 20px;">
+            <div style="font-size: 28px;">🚗</div>
+            <div class="card-title" style="font-size: 15px; color: #10b981; margin-top: 4px;">DETECTION & TRACK</div>
+            <div style="font-size: 13.5px; color: var(--text-muted);">Nguyen Minh Triet<br><span
+                style="color: var(--cyan-neon); font-family: var(--font-mono); font-weight: 700;">SE194257</span></div>
+          </div>
+
+          <div class="card"
+            style="text-align: center; align-items: center; border-color: rgba(245, 158, 11, 0.4); padding: 18px 20px;">
+            <div style="font-size: 28px;">📏</div>
+            <div class="card-title" style="font-size: 15px; color: #f59e0b; margin-top: 4px;">DEPTH & FCW ALERT</div>
+            <div style="font-size: 13.5px; color: var(--text-muted);">Do Khang<br><span
+                style="color: var(--cyan-neon); font-family: var(--font-mono); font-weight: 700;">SE196305</span></div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 14px; align-items: center; justify-content: center; margin-top: 4px;">
+          <span class="badge-code">CODEBASE: src/adas_baselines/</span>
+          <span class="badge-code">CONTRACT: FrameRecord v1.0</span>
+          <span class="badge-code">PYTEST: 100% PASS</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom HUD Status Bar -->
+  <footer class="hud-footer">
+    <div class="hud-status-items">
+      <div class="hud-status-item">
+        <div class="dot-pulse"></div>
+        <span>AI PIPELINE READY</span>
+      </div>
+      <div class="hud-status-item">
+        <span>CONTRACT:</span>
+        <span style="color: var(--cyan-neon);">v1.0 IMMUTABLE</span>
+      </div>
+    </div>
+    <div class="hud-status-items">
+      <div class="hud-status-item">
+        <span>SHORTCUTS: <strong>← / →</strong> (Navigate) | <strong>N</strong> (Notes) | <strong>O</strong> (Grid) |
+          <strong>F</strong> (Full)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Slide-in Speaker Notes Drawer -->
+  <aside id="notesDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <span>📝 SPEAKER NOTES (KỊCH BẢN THUYẾT TRÌNH)</span>
+      </div>
+      <button class="btn-hud" id="btnCloseNotes">✕</button>
+    </div>
+    <div class="drawer-body" id="notesContent">
+      <!-- Injected by JavaScript based on active slide -->
+    </div>
+  </aside>
+
+  <!-- Overview Grid Modal -->
+  <div id="overviewModal">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px;">
+      <h2 style="font-family: var(--font-heading); color: #fff; font-size: 22px;">⊞ OVERVIEW: 15 SLIDES - CAPSTONE
+        DEFENSE REVIEW 1
+      </h2>
+      <button class="btn-hud" id="btnCloseOverview">✕ Close (Esc)</button>
+    </div>
+    <div class="overview-grid" id="overviewGrid">
+      <!-- Generated by JavaScript -->
+    </div>
+  </div>
+
+  <!-- JavaScript for Presentation Engine -->
+  <script>
+    // Speaker Notes Data Dictionary for all 15 slides
+    const speakerNotes = {
+      1: `
+        <h4>Slide 1: Trang Bìa & Thông tin Đề tài</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Kính thưa Thầy Nguyễn Trọng Tài, Thầy Lê Phú Nguyên cùng quý Thầy Cô trong Hội đồng Review 1 Khóa luận Tốt nghiệp.</p>
+          <p>Hôm nay, nhóm chúng em xin đại diện báo cáo tiến độ Review 1 Đề tài <strong>FA26AI50: "Real-time Vision-Based Lane Detection, Object Detection, and Collision Warning System for Driver Assistance"</strong> dưới sự hướng dẫn chuyên môn của Thầy Nguyễn Xuân Huy và Thầy Nguyễn Quốc Trung.</p>
+          <p>Đề tài tập trung vào việc giải quyết bài toán cốt lõi: Mang lại khả năng cảnh báo va chạm sớm và giữ làn an toàn cho ô tô với chi phí phần cứng biên tối ưu (&lt; $800) dựa trên 01 camera RGB duy nhất kết hợp bộ xử lý AI nhúng NVIDIA Jetson.</p>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Ý nghĩa Đề tài</strong>: ADAS (Advanced Driver Assistance Systems) là hệ thống trợ lái nâng cao. Thay vì dùng cảm biến đắt đỏ, đề tài xây dựng chu trình khép kín 3 bài toán thị giác máy tính: Nhận diện làn đường (Lane Detection), Phát hiện & Bám vết vật thể (Object Detection & Tracking), Ước lượng độ sâu và Cảnh báo va chạm (Monocular Depth & FCW).</li>
+            <li><strong>Cấu trúc Đề tài & Mã nhóm</strong>: Mã đề tài đăng ký <code>FA26AI50</code> thuộc Học kỳ Fall 2026, Chuyên ngành AI, Khóa luận tốt nghiệp. Nhóm thực hiện <code>KLTN-AI-FA26AI50_GFA26AI09</code> gồm 3 thành viên: Nguyễn Trần Minh Quân (Leader), Nguyễn Minh Triết, Đỗ Khang.</li>
+            <li><strong>Ý nghĩa Kinh tế - Kỹ thuật</strong>: Hạ giá thành hệ thống từ $5.000 - $10.000 (hệ thống Radar/LiDAR xe sang) xuống dưới <strong>$800</strong> (Camera RGB $20 - $80 + Kit AI nhúng NVIDIA Jetson Orin Nano $300 - $499), mở ra cơ hội phổ cập ADAS cho xe phổ thông tại Việt Nam.</li>
+          </ul>
+        </div>
+      `,
+
+      2: `
+        <h4>Slide 2: Phân công Trách nhiệm Kỹ thuật 3 Thành viên</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Để đảm bảo tính độc lập học thuật và chiều sâu nghiên cứu, nhóm được phân công phụ trách 3 phân hệ kỹ thuật riêng biệt gắn với năng lực chuyên môn:</p>
+          <ul>
+            <li><strong>Nguyễn Trần Minh Quân (Leader)</strong>: Chịu trách nhiệm Phân hệ Làn đường (Lane Track trên CULane, mô hình UFLDv2) và kiến trúc hóa khung điều phối chung <code>IntegratedPipeline</code>.</li>
+            <li><strong>Nguyễn Minh Triết</strong>: Chịu trách nhiệm Phân hệ Phát hiện & Bám vết vật thể (Object Detection & ByteTrack trên BDD100K 10 lớp với YOLOv10 NMS-free) cùng bài toán tối ưu Pareto Trade-off.</li>
+            <li><strong>Đỗ Khang</strong>: Chịu trách nhiệm Phân hệ Đo độ sâu đơn ảnh & Tính toán va chạm (Monocular Metric Depth trên KITTI/CARLA với Depth Anything V2) và thuật toán TTC cảnh báo FCW 3 cấp độ.</li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Tính Độc lập Học thuật (Academic Independence)</strong>: Mỗi thành viên chịu trách nhiệm độc lập 100% về: Tập dữ liệu riêng, 2 Mô hình đối chứng Baseline riêng, 1 Mô hình đề xuất SOTA riêng, và Bộ độ đo định lượng riêng.</li>
+            <li><strong>Vai trò Leader - Nguyễn Trần Minh Quân (SE194342)</strong>: Thiết kế kiến trúc tổng thể, xây dựng chuẩn Hợp đồng dữ liệu <code>FrameRecord v1.0</code>, điều phối luồng video đồng bộ giữa 3 nhánh, và tối ưu hóa mạng phân loại neo hàng UFLDv2 đạt $F_1 \\ge 76.5\\%$, tốc độ suy luận $> 120\\text{ FPS}$.</li>
+            <li><strong>Vai trò Member - Nguyễn Minh Triết (SE194257)</strong>: Triển khai bài toán Object Detection 10 lớp BDD100K; khai thác cơ chế Dual Label Assignment của YOLOv10 để triệt tiêu khâu NMS; tích hợp ByteTrack 2 tầng; giải quyết bài toán tối ưu Pareto 4 chiều ($mAP$, $p95\\text{ Latency}$, $\\text{FPS}$, $\\text{VRAM}$).</li>
+            <li><strong>Vai trò Member - Đỗ Khang (SE196305)</strong>: Nghiên cứu mô hình nền tảng Depth Anything V2 ViT-S; chuyển đổi từ Relative Depth sang Metric Depth (mét thực tế); xây dựng module <code>ttc.py</code> tính vận tốc tiếp cận $v_z$ và thời gian va chạm $TTC = \\frac{Z}{v_z}$ để phân cấp cảnh báo FCW 3 mức.</li>
+          </ul>
+        </div>
+      `,
+
+      3: `
+        <h4>Slide 3: Bài toán Cần Giải quyết & Luồng AI Pipeline</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Các giải pháp ADAS thương mại hiện nay phụ thuộc nhiều vào cảm biến Radar/LiDAR đắt đỏ (&gt; $5.000). Đồng thời, sóng Radar truyền thống thiếu độ phân giải góc đứng nên rất dễ bị phản xạ kim loại từ nắp cống hoặc khe co giãn mố cầu gây cảnh báo giả và phanh gấp (Phantom Braking) cực kỳ nguy hiểm.</p>
+          <p>Nhóm đề xuất giải pháp <strong>AI Pipeline toàn trình trên 01 Camera RGB đơn kết hợp bộ xử lý AI nhúng</strong> (tổng chi phí phần cứng &lt; $800):</p>
+          <ul>
+            <li><strong>Ngữ nghĩa Hình ảnh (Vision Semantics)</strong>: Camera nhận biết chính xác nắp cống/gờ cầu thuộc mặt đường di chuyển (drivable road surface), loại bỏ triệt để hiện tượng kích hoạt phanh giả.</li>
+            <li><strong>Input</strong>: Luồng video 720p @ 30 FPS từ 01 camera RGB đơn giản gắn kính lái.</li>
+            <li><strong>Pipeline</strong>: 3 nhánh mạng xử lý song song/tuần tự, đóng gói đầu ra qua hợp đồng dữ liệu bất biến <code>FrameRecord contract v1.0</code>.</li>
+            <li><strong>Output</strong>: Giao diện HUD trực quan kèm cảnh báo va chạm trước FCW 3 màu (Xanh/Vàng/Đỏ) với độ trễ phân vị p95 &lt; 33ms.</li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT 6 KHỐI KIẾN TRÚC AI PIPELINE (KHI MỞ LƯU ĐỒ NGANG):</div>
+          <ul>
+            <li><strong>1. Camera Ingestion</strong>: 01 Monocular CMOS RGB Camera 720p @ 30 FPS gắn sau kính chiếu hậu. Giao tiếp V4L2/OpenCV đọc frame trực tiếp vào bộ đệm đơn single-slot tránh trễ tích lũy, gán nhãn <code>timestamp_seconds</code> độ chính xác nano-giây.</li>
+            <li><strong>2. Preprocessing & Tensor Dispatcher</strong>: Chuẩn hóa màu RGB [0.0, 1.0], tạo Tensor [1, 3, 720, 1280]. Tận dụng bộ nhớ chia sẻ Zero-copy Pinned Memory phân phối cho 3 luồng công nhân xử lý song song dưới cơ chế bảo vệ an toàn bộ nhớ <code>with torch.no_grad():</code>.</li>
+            <li><strong>3. Bộ 3 Luồng Baseline Hoạt động Song song</strong>:
+              <br>• <em>Quân (Lane)</em>: UFLDv2 ResNet-18 phân loại neo hàng 72 dòng x 100 cột trên CULane, tốc độ &gt; 120 FPS (~7.5 ms). Kết hợp thuật toán nội suy B-Spline làm mịn đường cong, triệt tiêu rung giật vạch kẻ qua các khung hình.
+              <br>• <em>Triết (Detection & Track)</em>: YOLOv10s NMS-Free (Dual Label Assignment One-to-One) trên BDD100K 10 lớp, triệt tiêu hoàn toàn 100% độ trễ NMS (tiết kiệm 2.5 ~ 4.0 ms đuôi p95). Kết hợp ByteTrack 2 tầng (tận dụng cả box cao ≥ 0.25 và box thấp 0.1 ≤ conf &lt; 0.25) để giữ ID ổn định khi xe bị che khuất tạm thời (Full Track 72.2 FPS).
+              <br>• <em>Khang (Depth & TTC)</em>: Foundation Model Depth Anything V2 ViT-S ước lượng độ sâu đơn mục, chuyển đổi sang Metric Depth Z (mét) nhờ hiệu chuẩn dữ liệu KITTI/CARLA (AbsRel &lt; 0.12). Lấy giá trị trung vị Z_obj = median(Z[bbox]), lọc vận tốc tiếp cận v_z = dZ/dt qua Moving Average Filter để tính thời gian va chạm TTC = Z_obj / v_z.
+            </li>
+            <li><strong>4. Immutable Contract Fusion Layer</strong>: Cấu trúc dữ liệu bất biến <code>FrameRecord contract v1.0</code> đóng gói toàn bộ kết quả thành một đối tượng dữ liệu duy nhất kèm timestamp đồng bộ, loại trừ hoàn toàn hiện tượng race condition. Context Manager tự động dọn rác bằng <code>torch.cuda.empty_cache()</code> để giữ mức trần Peak VRAM &lt; 2.5 GB.</li>
+            <li><strong>5. Safety Decision Logic (Chuẩn ISO 15623)</strong>:
+              <br>• <em>Phân cấp rủi ro FCW 3 mức</em>: 🟢 Safe (TTC &gt; 3.0s hoặc cự ly &gt; 30m), 🟡 Warning (1.5s &lt; TTC ≤ 3.0s), 🔴 Critical (TTC ≤ 1.5s — tính trên 0.9s phản xạ tài xế + 0.5s trễ kích hoạt phanh cơ học).
+              <br>• <em>Lọc Mục tiêu Trọng tâm (Primary Threat / Lead Vehicle Filter)</em>: Quét toàn bộ các vật thể trong làn di chuyển để tìm xe dẫn đầu nguy hiểm nhất theo tiêu chí min(TTC) và min(Z), gắn nhãn mục tiêu ưu tiên xử lý tức thì.
+              <br>• <em>Khoảng cách an toàn động theo vận tốc xe</em>: Căn cứ vận tốc xe chủ v_ego (từ GPS/CAN bus) để ước lượng cự ly phanh an toàn: <code>d_safe = v_ego × t_react + v_ego² / (2μg)</code>, thích ứng linh hoạt giữa môi trường đô thị và cao tốc thay vì dùng ngưỡng khoảng cách cố định (Fixed Distance Threshold) dễ gây cảnh báo giả.
+              <br>• <em>Cảnh báo lệch làn (LDW Alert)</em>: Kích hoạt khi độ lệch tâm ngang xe chủ so với tim đường |y_offset| &gt; 0.45m mà không bật đèn xi-nhan.
+            </li>
+            <li><strong>6. Real-time AR Cockpit HUD & Telemetry</strong>:
+              <br>• <em>Trực quan hóa AR Cockpit HUD</em>: Lớp phủ hành lang di chuyển an toàn màu Cyan (Drivable Corridor Polygon), vạch làn Neon B-Spline, Bounding Box 3D, thẻ đo khoảng cách thực tế (mét) và thời gian va chạm TTC (giây).
+              <br>• <em>Bảng Đo lường Hành trình (Object Telemetry List)</em>: Thống kê danh sách vật thể phía trước xếp theo cự ly tiệm cận (ví dụ: các mốc 16m, 40m, 63m, 90m), huy hiệu xe nguy hiểm nhất (Lead Vehicle ID & Cự ly) và đồng hồ đo vận tốc GPS (62 km/h) kèm thẻ trạng thái an toàn (SAFE DIST / WARNING / CRITICAL).
+              <br>• <em>Cam kết Hiệu năng Công nghiệp</em>: Thông lượng toàn trình ≥ 30 FPS và trễ đuôi p95 &lt; 33.3 ms trên Kit AI nhúng giá rẻ NVIDIA Jetson Orin Nano (&lt; $800).
+            </li>
+          </ul>
+        </div>
+      `,
+
+      4: `
+        <h4>Slide 4: Câu hỏi Nghiên cứu & Khoảng trống Học thuật</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Đề tài tập trung giải quyết 1 Câu hỏi nghiên cứu chính (Main RQ) và 3 RQ phụ tương ứng 3 phân hệ.</p>
+          <p>Đồng thời chỉ ra <strong>3 Khoảng trống nghiên cứu (Research Gaps)</strong> từ các công trình trước:</p>
+          <ol>
+            <li><em>Task Isolation Gap</em>: Các nghiên cứu trước chỉ làm đơn lẻ 1 tác vụ. Nhóm giải quyết sự tích hợp khép kín end-to-end.</li>
+            <li><em>Latency Bottleneck Gap</em>: Mạng Depth quá nặng. Nhóm chưng cất ViT-S nhẹ để duy trì tốc độ ≥ 30 FPS.</li>
+            <li><em>Gradient Conflict Gap</em>: Khắc phục hiện tượng cạnh tranh gradient của mạng dùng chung backbone như YOLOPv2 bằng kiến trúc module hóa hướng hợp đồng.</li>
+          </ol>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Main RQ</strong>: Đặt bài toán tối ưu hóa đa mục tiêu: Làm sao để tích hợp đồng thời 3 tác vụ nặng mà vẫn duy trì thông lượng $\\ge 30\\text{ FPS}$ và $p95 < 33\\text{ ms}$ trên GPU biên thương mại.</li>
+            <li><strong>Sub-RQ1 (Lane)</strong>: Nghiên cứu phương pháp phân loại neo hàng (Row-based anchor classification) của UFLDv2 có thể thay thế mạng phân vùng điểm ảnh (Segmentation) để giảm $90\\%$ khối lượng tính toán trên tập CULane trong điều kiện ánh sáng yếu/bóng râm hay không.</li>
+            <li><strong>Sub-RQ2 (Detection & Tracking)</strong>: Chứng minh định lượng rằng kiến trúc NMS-free Dual Label Assignment của YOLOv10 kết hợp ByteTrack giúp triệt tiêu độ trễ hậu xử lý ($2 \\sim 4\\text{ ms}$) và giảm dao động $p95\\text{ Latency}$ trên tập BDD100K 10 lớp.</li>
+            <li><strong>Sub-RQ3 (Depth & TTC)</strong>: Khảo sát khả năng ước lượng bản đồ độ sâu khoảng cách thực (Metric Depth) từ mô hình nền tảng Depth Anything V2 với sai số $\\text{AbsRel} < 0.12$ để tính $TTC = \\frac{Z}{v_z}$ phục vụ cảnh báo sớm trước $\\ge 1.5\\text{s}$ mà không cần LiDAR.</li>
+            <li><strong>Bản chất Gradient Conflict Gap</strong>: Khi huấn luyện chung 1 backbone cho nhiều tác vụ (như YOLOPv2), gradient lan truyền ngược từ nhánh Detection và nhánh Lane/Depth thường triệt tiêu hoặc làm lệch hướng trọng số chung, dẫn đến độ chính xác tổng thể thấp hơn so với việc tối ưu độc lập từng nhánh rồi ghép nối qua Pipeline.</li>
+          </ul>
+        </div>
+      `,
+
+      5: `
+        <h4>Slide 5: Tổng quan Nghiên cứu Tiên phong & SOTA (Đối sánh 6 Mô hình)</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Kính thưa Hội đồng, để xây dựng nền tảng học thuật vững chắc, nhóm khảo sát toàn diện 6 mô hình tiên phong tiêu biểu nhất hiện nay. Mỗi mô hình đều có đột phá lớn nhưng đồng thời bộc lộ những hạn chế cốt lõi khi ứng dụng vào hệ thống ADAS thời gian thực:</p>
+          <ul>
+            <li><strong>1. YOLOv10 (2024)</strong>: Đột phá loại bỏ 100% độ trễ khâu NMS, nhưng chỉ là Detector frame tĩnh, hoàn toàn thiếu bộ nhớ bám vết liên tục theo thời gian (Tracking ID).</li>
+            <li><strong>2. ByteTrack (2022)</strong>: Thuật toán liên kết 2 tầng thông minh, nhưng phụ thuộc hoàn toàn 100% vào chất lượng hộp của Detector, dễ sinh track giả nếu phát hiện sai.</li>
+            <li><strong>3. UFLDv2 (2022)</strong>: Tốc độ cực nhanh (&gt; 150 FPS) nhờ phân loại neo hàng, nhưng thuật toán quét ngang bị giới hạn hình học khi gặp góc cua gắt (&gt; 90°) hoặc ngã tư phân nhánh.</li>
+            <li><strong>4. CLRNet (2022)</strong>: Độ chính xác SOTA trên CULane (F1 = 79.6%), nhưng kiến trúc FPN đa tầng quá nặng, tốc độ chỉ ~ 35 FPS gây nghẽn toàn bộ hệ thống biên.</li>
+            <li><strong>5. Depth Anything V2 (2024)</strong>: Bản đồ độ sâu sắc nét chi tiết từ camera đơn, nhưng đầu ra chỉ là thang đo tương đối [0, 1], thiếu đơn vị mét vật lý để tính vận tốc và thời gian va chạm TTC.</li>
+            <li><strong>6. YOLOPv2 (2022)</strong>: Tích hợp 3 tác vụ trên 1 mạng duy nhất, nhưng chịu hiện tượng xung đột Gradient (Gradient Conflict) nghiêm trọng giữa các nhánh làm giảm độ chính xác chung.</li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & BẢN CHẤT KỸ THUẬT TỪNG HẠN CHẾ (PHỤC VỤ PHẢN BIỆN):</div>
+          <ul>
+            <li><strong>YOLOv10 - Vì sao thiếu Temporal Tracking là điểm yếu lớn trong ADAS?</strong>
+              <br>• <em>Bản chất</em>: Cơ chế Dual Label Assignment giúp One-to-One Head chỉ dự đoán duy nhất 1 box/vật thể, loại bỏ triệt để NMS (tiết kiệm 2 ~ 4 ms). Tuy nhiên, mô hình chỉ nhận diện ảnh tĩnh độc lập từng frame, không có trạng thái không gian-thời gian (spatio-temporal continuity).
+              <br>• <em>Hệ quả trong ADAS</em>: Xe ô tô di chuyển liên tục, nếu không gán ID ổn định thì ID xe phía trước sẽ nhảy liên tục giữa các khung hình (ID Switches). Hệ quả là không thể tính toán đạo hàm vận tốc tiếp cận v_z và không thể dự đoán được quỹ đạo di chuyển của đối tượng. Nhóm giải quyết bằng cách ghép nối với ByteTrack.
+            </li>
+            <li><strong>ByteTrack - Vì sao phụ thuộc 100% vào chất lượng Bounding Box của Detector?</strong>
+              <br>• <em>Bản chất</em>: ByteTrack là thuật toán Tracking-by-Detection thuần túy dựa trên bộ lọc Kalman và Hungarian Matching theo ma trận hình học IoU, loại bỏ mạng trích xuất đặc trưng Re-ID nặng nề để đạt tốc độ cao.
+              <br>• <em>Hệ quả trong ADAS</em>: Nếu Detector dự đoán kích thước bounding box bị dao động co giật hoặc nhầm lẫn nền đường (False Positive), ByteTrack vẫn sẽ gán ghép và sinh ra các vết bám sai lệch (False Tracks). Ngược lại, nếu xe bị che khuất quá lâu vượt quá ngưỡng max_time_lost thì quỹ đạo sẽ bị cắt đứt. Nhóm khắc phục bằng cách thiết lập ngưỡng ghép nối 2 cấp nghiêm ngặt (0.1 ≤ conf &lt; 0.25).
+            </li>
+            <li><strong>UFLDv2 - Vì sao nhạy cảm khi góc cua quá gắt (&gt; 90°) và đường phân nhánh?</strong>
+              <br>• <em>Bản chất</em>: UFLDv2 rời rạc hóa bài toán nhận diện làn đường thành việc dự đoán ô cột trên N_row = 72 dòng quét ngang. Tiền đề hình học cốt lõi là: vạch kẻ đường luôn cắt ngang các dòng quét từ dưới lên trên và mỗi dòng quét chỉ có tối đa 1 điểm cắt cho mỗi làn.
+              <br>• <em>Hệ quả trong ADAS</em>: Khi xe vào khúc cua tay áo (hairpin bend) hoặc góc rẽ gắt (&gt; 90°), vạch kẻ đường sẽ nằm ngang song song với dòng quét hoặc uốn cong cắt nhiều lần trên cùng 1 dòng quét, khiến giả định toán học bị vi phạm hoàn toàn. Nhóm khắc phục bằng việc tích hợp thuật toán làm mịn đường cong tham số B-Spline để ngoại suy hình học.
+            </li>
+            <li><strong>CLRNet - Vì sao đạt SOTA (F1 = 79.6%) nhưng không phù hợp cho Edge ADAS?</strong>
+              <br>• <em>Bản chất</em>: CLRNet sử dụng cơ chế Cross Layer Refinement, liên tục truyền ngược và tinh chỉnh đặc trưng qua cả 3 tầng Feature Pyramid Network (FPN) từ low-level đến high-level.
+              <br>• <em>Hệ quả trong ADAS</em>: Mô hình này ngốn băng thông bộ nhớ (Memory Bandwidth) và tài nguyên tính toán cực lớn. Trên GPU nhúng như Jetson Orin Nano, CLRNet chỉ chạy được ~ 35 FPS khi chạy một mình; nếu chạy cùng lúc với Detection và Depth thì tốc độ toàn hệ thống sẽ sập xuống dưới 10 ~ 15 FPS, vi phạm tiêu chuẩn an toàn thời gian thực.
+            </li>
+            <li><strong>Depth Anything V2 - Vì sao độ sâu tương đối [0, 1] là rào cản chí mạng cho FCW?</strong>
+              <br>• <em>Bản chất</em>: Nhờ mô hình nền tảng ViT học tự giám sát trên 62 triệu ảnh, Depth Anything V2 phân biệt cực kỳ sắc nét ranh giới giữa các vật thể. Tuy nhiên, hàm loss chuẩn của mạng chỉ tối ưu thứ tự sâu/nông tương đối (Affine-invariant Relative Depth), giá trị đầu ra vô hướng d ∈ [0, 1].
+              <br>• <em>Hệ quả trong ADAS</em>: Tiêu chuẩn an toàn ô tô quốc tế ISO 15623 quy định công thức tính thời gian va chạm TTC = Z / v_z (trong đó khoảng cách Z và vận tốc tiếp cận v_z phải đo bằng mét và mét/giây). Nếu chỉ có thang đo [0, 1] thì không thể biết xe phía trước cách 5 mét hay 50 mét để kích hoạt phanh tự động. Nhóm giải quyết bằng cách căn chỉnh tỷ lệ Metric Depth trên tập dữ liệu KITTI/CARLA.
+            </li>
+            <li><strong>YOLOPv2 - Bản chất kỹ thuật của hiện tượng xung đột Gradient (Gradient Conflict)?</strong>
+              <br>• <em>Bản chất</em>: YOLOPv2 ép 1 backbone duy nhất phải chia sẻ đặc trưng đồng thời cho 3 nhánh đầu ra: Object Detection, Drivable Area Segmentation và Lane Detection.
+              <br>• <em>Hệ quả trong ADAS</em>: Trong quá trình lan truyền ngược (Backpropagation), gradient của nhánh Segmentation (vốn cần đặc trưng diện rộng và màu sắc mặt đường) thường có hướng vector đối nghịch hoặc triệt tiêu gradient của nhánh Detection (vốn cần đặc trưng viền cạnh sắc nhọn của xe cộ). Kết quả là cả 3 nhánh đều không đạt độ chính xác tối ưu. Hơn nữa, việc ghép chung vào 1 mạng khiến hệ thống mất tính linh hoạt, không thể nâng cấp từng module độc lập. Nhóm khắc phục bằng kiến trúc AI Pipeline hướng hợp đồng (Contract-driven Modular Pipeline).
+            </li>
+          </ul>
+        </div>
+      `,
+
+      6: `
+        <h4>Slide 6: Phân tích Riêng biệt Baseline Models & Lựa chọn Kế thừa (3 Phân hệ)</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Kính thưa Hội đồng, nhóm thiết lập hệ tọa độ đối chứng khoa học với 2 Baseline độc lập và 1 Selected Baseline được chọn kế thừa cho từng thành viên:</p>
+          <ul>
+            <li><strong>Quân (Làn đường)</strong>:
+              <br>• Đối chứng <strong>Canny-Hough</strong> (cổ điển, CULane) chạy rất nhanh (&gt; 100 FPS) nhưng F1 &lt; 40%; đối chứng <strong>SCNN</strong> (CVPR 2018, CULane) chính xác (F1 = 71.6%) nhưng tốc độ tụt sâu nghẽn pipeline (~7.5 FPS / 133 ms).
+              <br>• <strong>Selected Baseline</strong>: Nhóm chọn <strong>UFLDv2 ResNet-18</strong> (Dataset: CULane) để giải quyết nghịch lý tốc độ - chính xác, kỳ vọng F1 ≥ 76.5% và tốc độ &gt; 120 FPS (~7.5 ms).
+            </li>
+            <li><strong>Triết (Vật thể & Bám vết)</strong>:
+              <br>• Khảo sát sơ bộ 3 quy mô (Nano, Small, Medium), loại Medium (&gt; 60 GFLOPs). Đối chứng <strong>YOLOv8s</strong> (COCO / BDD100K, mAP₅₀ ≈ 62.5%) bị trễ đuôi NMS +2.5 ~ 4.0 ms; đối chứng <strong>YOLOv10n</strong> (BDD100K 10 lớp) siêu nhanh (4.5 ms) nhưng mAP₅₀ = 56.41% do dung lượng quá nhỏ (2.27M params).
+              <br>• <strong>Selected Baseline</strong>: Nhóm chọn <strong>YOLOv10s NMS-free</strong> (Dataset: BDD100K) làm điểm ngọt tối ưu, kỳ vọng mAP₅₀ ≥ 58 ~ 60%, Detector &gt; 140 FPS (7.15 ms), Full Track &gt; 70 FPS, triệt tiêu 100% chi phí NMS.
+            </li>
+            <li><strong>Khang (Độ sâu & TTC)</strong>:
+              <br>• Đối chứng <strong>StereoSGBM</strong> (KITTI Stereo) đo được mét vật lý (Z = f · B / d) nhưng đòi hỏi hệ 2 camera hiệu chỉnh cơ khí quang học nghiêm ngặt; đối chứng <strong>Depth Anything V1</strong> (KITTI Eigen) chạy monocular nhưng chỉ ra độ sâu tương đối [0, 1], thiếu thang mét để tính v_z và TTC.
+              <br>• <strong>Selected Baseline</strong>: Nhóm chọn <strong>Depth Anything V2 ViT-S</strong> (Dataset: KITTI Raw & CARLA) để đột phá dùng 1 camera đơn thương mại vẫn đo được khoảng cách mét thực tế (AbsRel &lt; 0.12), phục vụ module cảnh báo TTC &lt; 15 ms theo chuẩn ISO 15623.
+            </li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT (TRẢ LỜI PHẢN BIỆN):</div>
+          <ul>
+            <li><strong>Quân (Phân hệ Làn đường - CULane)</strong>:
+              <br>• <em>Cơ chế Canny-Hough</em>: Lọc biên đạo hàm Sobel + Biến đổi Hough trên ROI hình thang. Điểm nghẽn: Ngưỡng gradient tĩnh thất bại hoàn toàn khi đường có bóng cây râm, vạch mờ, ngược sáng hoặc nứt mặt đường ➔ F1 &lt; 40%.
+              <br>• <em>Cơ chế SCNN</em>: Truyền thông điệp đặc trưng 4 hướng không gian (Top➔Down, Down➔Top, Left➔Right, Right➔Left). Điểm nghẽn: Bản chất tính toán tuần tự từng lát cắt (sequential slice-by-slice) phá vỡ tính song song của GPU, gây độ trễ ~133 ms (~7.5 FPS), không thể chạy Real-time ADAS đa luồng.
+              <br>• <em>Lý do chọn UFLDv2</em>: Rời rạc hóa thành bài toán phân loại neo hàng (Row-based anchor classification) trên lưới thô 72 dòng quét ngang, giảm 90% phép tính so với segmentation tuần tự của SCNN. Nhóm kế thừa kiến trúc này và cải tiến thêm thuật toán làm mịn đường cong B-Spline để triệt tiêu rung giật vạch qua các frame.
+            </li>
+            <li><strong>Triết (Phân hệ Vật thể & Bám vết - BDD100K 10 lớp)</strong>:
+              <br>• <em>Sàng lọc 3 quy mô (Screening)</em>: Nano (2.27M params, 8.2 GFLOPs), Small (8.03M params, 24.8 GFLOPs), Medium (16.5M params, 68.5 GFLOPs). Bản Medium bị loại bỏ ngay vì vượt ngưỡng ngân sách tính toán trên GPU đơn.
+              <br>• <em>Hạn chế YOLOv8s</em>: Huấn luyện One-to-Many bắt buộc phải có thuật toán lọc Non-Maximum Suppression (NMS) ở khâu inference. NMS phụ thuộc số lượng box dự đoán; khi đường đông xe, NMS tốn thêm 2.5 ~ 4.0 ms, gây biến thiên trễ đuôi p95 rất nguy hiểm trong điều khiển xe tự hành.
+              <br>• <em>Hạn chế YOLOv10n</em>: Dù NMS-free nhưng dung lượng 2.27M tham số không đủ sức khái quát hóa các đối tượng dễ bị che khuất hoặc người đi bộ/xe đạp xa (VRUs).
+              <br>• <em>Lý do chọn YOLOv10s</em>: Cơ chế Dual Label Assignment dùng One-to-Many để học biểu diễn và One-to-One để suy luận ➔ Triệt tiêu NMS 100% trong khi dung lượng 8.0M params là điểm ngọt hoàn hảo. Kết hợp ByteTrack 2 tầng (tận dụng cả box conf thấp 0.1 ≤ conf &lt; 0.25) giúp bám vết ổn định khi xe bị che khuất tạm thời.
+            </li>
+            <li><strong>Khang (Phân hệ Độ sâu & TTC - KITTI & CARLA)</strong>:
+              <br>• <em>Hạn chế StereoSGBM</em>: Công thức tam giác đạc Z = (f · B) / d chuẩn lý thuyết. Nhưng nhược điểm chí mạng trong thực tế xe hơi là yêu cầu 2 camera với khoảng cách trục cơ sở B cố định. Chỉ cần rung lắc cơ khí hoặc giãn nở nhiệt là thông số hiệu chuẩn quang học ngoại vi sai lệch ➔ Disparity bị vỡ hoặc ra giá trị NaN.
+              <br>• <em>Hạn chế Depth Anything V1</em>: Huấn luyện self-distillation trên 62M ảnh không nhãn cho biên độ nét cao nhưng chỉ xuất ra thang đo tương đối vô hướng d ∈ [0, 1]. Không có đơn vị mét vật lý thì không thể tính vận tốc tiếp cận v_z = dZ/dt và TTC = Z / v_z để phát tín hiệu phanh khẩn cấp.
+              <br>• <em>Lý do chọn Depth Anything V2 ViT-S</em>: Là Foundation Model đầu tiên hỗ trợ ước lượng độ sâu vật lý Metric Depth trực tiếp từ 1 camera Monocular duy nhất. Nhóm kế thừa bản ViT-S nhỏ gọn (24.8M params) và tích hợp module tính TTC phân cấp 3 mức tuân thủ tiêu chuẩn an toàn ô tô quốc tế ISO 15623.
+            </li>
+          </ul>
+        </div>
+        <div class="notes-section" style="border-top: 1px dashed rgba(245, 158, 11, 0.3); padding-top: 8px; margin-top: 10px;">
+          <div class="notes-heading" style="color: var(--amber-warn);">📚 TRA CỨU CHI TIẾT TẠI SUB-PAGE MINH CHỨNG:</div>
+          <p style="font-size: 13px; font-family: var(--font-mono); color: #cbd5e1;">Bấm vào badge <code>🔗 Link connect source ↗</code> trên Slide 06 hoặc truy cập sub-page <a href="adas_baseline_verification.html" target="_blank" style="color: var(--cyan-neon);">adas_baseline_verification.html</a> để đối chiếu bảng chỉ số benchmark 3 hàng (Baseline 1 vs Baseline 2 vs Selected Baseline) cùng trích dẫn paper quốc tế đã được kiểm chứng 100%.</p>
+        </div>
+      `,
+
+      7: `
+        <h4>Slide 7: Phương pháp Đề xuất & Điểm Mới Cải tiến</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <ul>
+            <li><strong>Quân</strong>: UFLDv2 phân loại neo hàng trên lưới thô + làm mịn B-Spline, đạt F1 ≥ 76.5% và tốc độ &gt; 120 FPS.</li>
+            <li><strong>Triết</strong>: YOLOv10s NMS-free + ByteTrack. Trong pha Screening 50 epochs trên BDD100K đã đạt $mAP_{50} = 52.87\%$, Detector 7.15ms (140 FPS), Full Track 72.2 FPS ($p95 = 15.38\\text{ ms}$). Mục tiêu pha Confirmation 100 epochs tiếp theo hướng tới $mAP_{50} \\ge 58 \\sim 60\%$.</li>
+            <li><strong>Khang</strong>: Depth Anything V2 ViT-S Metric Depth + Module <code>ttc.py</code> phân cấp cảnh báo FCW 3 cấp độ: Safe (&gt; 3s), Warning (1.5 - 3s), Critical (≤ 1.5s).</li>
+            <li><strong>Core</strong>: Khung <code>IntegratedPipeline</code> tự giải phóng VRAM bằng Context Manager, duy trì Peak VRAM &lt; 2.5 GB.</li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Quân (UFLDv2 + B-Spline Smoothing)</strong>:
+              <br>• Lưới dòng thô $C \\times N_{\\text{row}} \\times (N_{\\text{col}} + 1)$ chia khung hình thành 72 dòng quét ngang và 100 ô cột. Mô hình chỉ cần dự đoán ô cột nào chứa vạch làn.
+              <br>• Tích hợp thuật toán nội suy làm mịn đường cong B-Spline giúp loại bỏ hiện tượng rung lắc tọa độ vạch làn giữa các khung hình liên tiếp.
+            </li>
+            <li><strong>Triết (YOLOv10s NMS-free + ByteTrack)</strong>:
+              <br>• *Cơ chế Dual Label Assignment*: Trong quá trình huấn luyện, mô hình học song song 2 nhánh: One-to-Many Head (cung cấp nhiều tín hiệu giám sát phong phú để trích xuất đặc trưng) và One-to-One Head (tối ưu hàm khớp $\\mathcal{M} = s^\\alpha \\cdot \\text{IoU}^\\beta$). Khi Inference, nhánh One-to-Many bị loại bỏ hoàn toàn, chỉ giữ lại One-to-One $\\implies$ Đầu ra tự động chỉ có duy nhất 1 box/vật thể, triệt tiêu $100\\%$ khâu NMS!
+              <br>• *Kết quả đo đạc thực nghiệm 50 epochs (Screening BDD100K)*: $mAP_{50} = \\mathbf{52.87\\%}$, $mAP_{50-95} = \\mathbf{31.41\\%}$, Tốc độ Detector: $\\mathbf{7.15\\text{ ms}}$ ($\\approx 140\\text{ FPS}$), Toàn bộ chuỗi Tracking: $\\mathbf{72.2\\text{ FPS}}$, độ trễ phân vị $p95 = \\mathbf{15.38\\text{ ms}}$. Mục tiêu Confirmation 100 epochs với Focal Loss $\\implies mAP_{50} \\ge 58 \\sim 60\\%$.
+            </li>
+            <li><strong>Khang (Depth Anything V2 ViT-S + Module <code>ttc.py</code>)</strong>:
+              <br>• Trích xuất giá trị độ sâu trung vị của vật thể: $Z_{\\text{obj}} = \\text{median}(Z[\\text{bbox}])$ để loại bỏ nhiễu hạt biên.
+              <br>• Vận tốc tiếp cận: $v_z = \\frac{dZ}{dt} = \\frac{Z_{t} - Z_{t-\\Delta t}}{\\Delta t} \\implies TTC = \\frac{Z_{\\text{obj}}}{v_z}$.
+              <br>• Tiêu chuẩn phân cấp FCW 3 cấp: Safe ($TTC > 3.0\\text{s}$), Warning ($1.5 < TTC \\le 3.0\\text{s}$), Critical ($TTC \\le 1.5\\text{s}$). Ngưỡng $1.5\\text{s}$ tuân thủ tiêu chuẩn an toàn ô tô quốc tế ISO 15623 (thời gian phản xạ của tài xế $0.9\\text{s}$ + thời gian trễ cơ khí phanh xe $0.5\\text{s}$).
+            </li>
+            <li><strong>Khung Tích hợp <code>IntegratedPipeline</code></strong>: Chuẩn hóa qua giao diện <code>BaseAdapter</code> bọc bộ quản lý ngữ cảnh Context Manager (<code>with torch.no_grad():</code>) và tự động giải phóng bộ nhớ đệm (<code>torch.cuda.empty_cache()</code>), bảo đảm tổng mức chiếm dụng GPU Peak VRAM luôn $< 2.5\\text{ GB}$.</li>
+          </ul>
+        </div>
+        <div class="notes-section" style="border-top: 1px dashed rgba(56, 189, 248, 0.3); padding-top: 8px; margin-top: 10px;">
+          <div class="notes-heading" style="color: var(--blue-accent);">📚 MINH CHỨNG HỌC THUẬT & TRÍCH DẪN CHUẨN IEEE:</div>
+          <ul style="font-size: 13px; font-family: var(--font-mono);">
+            <li><strong>[Quân - UFLDv2]</strong>: Z. Qin, P. Wang, and X. Li, <em>"Ultra Fast Deep Lane Detection with Hybrid Anchor Driving,"</em> <strong>IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI)</strong>, vol. 45, no. 6, pp. 7800–7812, 2022. DOI: <a href="https://doi.org/10.1109/TPAMI.2022.3182081" target="_blank" style="color: var(--cyan-neon);">10.1109/TPAMI.2022.3182081</a> | <a href="https://arxiv.org/abs/2206.07389" target="_blank" style="color: var(--cyan-neon);">arXiv:2206.07389</a>.</li>
+            <li><strong>[Triết - YOLOv10]</strong>: A. Wang, H. Chen, L. Liu, K. Chen, Z. Lin, J. Han, and G. Ding, <em>"YOLOv10: Real-Time End-to-End Object Detection,"</em> <strong>arXiv preprint arXiv:2405.14458</strong> (Tsinghua University), 2024. Link: <a href="https://arxiv.org/abs/2405.14458" target="_blank" style="color: var(--cyan-neon);">arXiv:2405.14458</a>.</li>
+            <li><strong>[Triết - ByteTrack]</strong>: Y. Zhang, P. Sun, Y. Jiang, D. Yu, F. Weng, Z. Yuan, P. Luo, W. Liu, and X. Wang, <em>"ByteTrack: Multi-Object Tracking by Associating Every Detection Box,"</em> in <strong>European Conference on Computer Vision (ECCV)</strong>, Springer, pp. 1–21, 2022. Link: <a href="https://arxiv.org/abs/2110.06864" target="_blank" style="color: var(--cyan-neon);">arXiv:2110.06864</a>.</li>
+            <li><strong>[Khang - Depth Anything V2]</strong>: L. Yang, B. Kang, Z. Huang, Z. Zhao, X. Xu, J. Feng, and H. Zhao, <em>"Depth Anything V2: A Foundation Model for Monocular Depth Estimation,"</em> <strong>arXiv preprint arXiv:2406.09414</strong> (TikTok / HKU), 2024. Link: <a href="https://arxiv.org/abs/2406.09414" target="_blank" style="color: var(--cyan-neon);">arXiv:2406.09414</a>.</li>
+            <li><strong>[Khang - Chuẩn FCW ISO 15623]</strong>: ISO, <em>"ISO 15623:2013 - Intelligent transport systems — Forward collision warning systems — Performance requirements and test procedures,"</em> ISO Standard, 2013. Link: <a href="https://www.iso.org/standard/57424.html" target="_blank" style="color: var(--cyan-neon);">ISO 15623:2013</a>.</li>
+          </ul>
+        </div>
+      `,
+
+      8: `
+        <h4>Slide 8: Quy trình Dữ liệu & Data Engineering (3 Phân hệ)</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <ul>
+            <li><strong>Quân</strong>: CULane (133k frames, 9 cảnh) chuẩn hóa tọa độ và Augmentation góc nghiêng/ánh sáng.</li>
+            <li><strong>Triết</strong>: BDD100K 10 lớp (80k ảnh). Tích hợp hàm kiểm định chéo mã băm SHA-256 <code>validate_disjoint_manifests()</code> chứng minh 100% không rò rỉ dữ liệu giữa Train và Validation; áp dụng Focal Loss cân bằng các lớp người đi bộ, xe máy.</li>
+            <li><strong>Khang</strong>: KITTI LiDAR + CARLA Simulator chiếu điểm 3D lên mặt phẳng 2D camera, lọc ngưỡng an toàn Z ≤ 80m.</li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Quân (CULane Dataset)</strong>:
+              <br>• Tập dữ liệu lớn gồm $133.235$ khung hình video ($88.880$ train, $9.675$ val, $34.680$ test) thu thập tại Bắc Kinh với 9 kịch bản thực tế (bình thường, đêm, ngược sáng, bóng cây, đường đông, vạch đứt, đường cong, không vạch kẻ).
+              <br>• Quy trình xử lý: Đọc tọa độ điểm đa giác từ <code>.lines.txt</code>, chuẩn hóa tọa độ ảnh về tỉ lệ $[0.0, 1.0]$, áp dụng kỹ thuật Data Augmentation lật ngang ngẫu nhiên, xoay góc nghiêng $\\pm 10^\\circ$ và biến đổi độ sáng/tương phản.
+            </li>
+            <li><strong>Triết (BDD100K 10 Classes)</strong>:
+              <br>• $80.000$ ảnh ($70.000$ train / $10.000$ val) với 10 lớp giao thông: <code>car</code>, <code>truck</code>, <code>bus</code>, <code>pedestrian</code>, <code>rider</code>, <code>motorcycle</code>, <code>bicycle</code>, <code>traffic light</code>, <code>traffic sign</code>, <code>train</code>.
+              <br>• *Kiểm định chống rò rỉ dữ liệu (Anti Data-Leakage)*: Xây dựng hàm <code>validate_disjoint_manifests()</code> tính toán mã băm SHA-256 cho từng tệp ảnh và nhãn annotation, chứng minh $100\\%$ không có bất kỳ ảnh nào bị trùng lặp giữa tập Train và Validation.
+              <br>• *Cân bằng lớp*: Nhóm người đi bộ (<code>pedestrian</code>), người lái xe (<code>rider</code>), xe đạp (<code>bicycle</code>) chiếm tỷ lệ nhỏ ($< 8\\%$ tổng nhãn) $\\implies$ Áp dụng Focal Loss $(\\alpha = 0.25, \\gamma = 2.0)$ và gán trọng số lớp (Class Weights) để ép mô hình tập trung học các lớp yếu thế dễ gây tai nạn.
+            </li>
+            <li><strong>Khang (KITTI Raw & CARLA Simulator)</strong>:
+              <br>• Sử dụng dữ liệu mây điểm 3D LiDAR (Velodyne HDL-64E) đồng bộ với camera màu phía trước từ KITTI Raw kết hợp $5.000$ ảnh quang học từ trình giả lập CARLA Simulator.
+              <br>• Quy trình hình học: Chiếu điểm 3D $(X, Y, Z)$ lên mặt phẳng ảnh 2D $(u, v)$ thông qua phương trình chiếu phối cảnh: $\\begin{bmatrix} u \\\\ v \\\\ 1 \\end{bmatrix} \\sim K \\cdot [R \\mid T] \\cdot \\begin{bmatrix} X \\\\ Y \\\\ Z \\\\ 1 \\end{bmatrix}$.
+              <br>• Lọc ngưỡng an toàn $Z \\le 80\\text{m}$: Cắt bỏ các điểm mây ở cự ly $> 80\\text{m}$ (ngoài tầm kiểm soát phanh ở vận tốc $100\\text{ km/h}$) để tối ưu mật độ gradient cho vùng gần xe.
+            </li>
+          </ul>
+        </div>
+        <div class="notes-section" style="border-top: 1px dashed rgba(56, 189, 248, 0.3); padding-top: 8px; margin-top: 10px;">
+          <div class="notes-heading" style="color: var(--blue-accent);">📚 NGUỒN DATASET & MINH CHỨNG CHUẨN IEEE:</div>
+          <ul style="font-size: 13px; font-family: var(--font-mono);">
+            <li><strong>[Quân - CULane Dataset]</strong>: X. Pan, J. Shi, P. Luo, X. Wang, and X. Tang, <em>"Spatial As Deep: Spatial CNN for Traffic Lane Detection,"</em> in <strong>IEEE/CVF CVPR</strong>, pp. 7260–7269, 2018. Portal: <a href="https://xingangpan.github.io/projects/CULane.html" target="_blank" style="color: var(--cyan-neon);">xingangpan.github.io/projects/CULane.html</a> | <a href="https://arxiv.org/abs/1712.06080" target="_blank" style="color: var(--cyan-neon);">arXiv:1712.06080</a>.</li>
+            <li><strong>[Triết - BDD100K Dataset]</strong>: F. Yu, H. Chen, X. Wang, W. Xian, Y. Chen, F. Liu, V. Madhavan, and T. Darrell, <em>"BDD100K: A Diverse Driving Dataset for Heterogeneous Multitask Learning,"</em> in <strong>IEEE/CVF CVPR</strong>, pp. 2636–2645, 2020. Portal: <a href="https://www.bdd100k.com" target="_blank" style="color: var(--cyan-neon);">bdd100k.com</a> | <a href="https://arxiv.org/abs/1805.04687" target="_blank" style="color: var(--cyan-neon);">arXiv:1805.04687</a>.</li>
+            <li><strong>[Khang - KITTI Vision Benchmark]</strong>: A. Geiger, P. Lenz, and R. Urtasun, <em>"Are we ready for Autonomous Driving? The KITTI Vision Benchmark Suite,"</em> in <strong>IEEE/CVF CVPR</strong>, pp. 3354–3361, 2012. Portal: <a href="https://www.cvlibs.net/datasets/kitti/raw_data.php" target="_blank" style="color: var(--cyan-neon);">cvlibs.net/datasets/kitti</a>.</li>
+            <li><strong>[Khang - CARLA Simulator]</strong>: A. Dosovitskiy, G. Ros, F. Codevilla, A. Lopez, and V. Koltun, <em>"CARLA: An Open Urban Driving Simulator,"</em> in <strong>Conference on Robot Learning (CoRL)</strong>, pp. 1–16, 2017. Portal: <a href="https://carla.org" target="_blank" style="color: var(--cyan-neon);">carla.org</a>.</li>
+          </ul>
+        </div>
+      `,
+
+      9: `
+        <h4>Slide 9: Chiến lược Đánh giá, Ablation Study & Error Analysis</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <ul>
+            <li>Thiết lập bộ độ đo khoa học độc lập: F1-score/Accuracy (Quân), mAP/p95 Latency/FPS (Triết), AbsRel/RMSE/TTC Error (Khang), và End-to-End Latency/Peak VRAM (Pipeline).</li>
+            <li>Kế hoạch Ablation Study TR-10 tinh chỉnh ngưỡng ghép nối ByteTrack (0.1 vs 0.2 vs 0.3) và phân tích lỗi che khuất (Occlusion) / ban đêm chói đèn pha.</li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Bộ Độ đo Khoa học Độc lập</strong>:
+              <br>• *Quân (Lane)*: $F_1\\text{-score} = \\frac{2 \\cdot P \\cdot R}{P + R}$ tại ngưỡng Line IoU $0.5$, Tỷ lệ phát hiện đúng Accuracy (%), Tốc độ FPS.
+              <br>• *Triết (Detection & Tracking)*: $mAP_{50}$, $mAP_{50-95}$, Độ trễ phân vị $p95\\text{ Latency}$, Tốc độ $\\text{FPS}$, Chỉ số bám vết $\\text{MOTA}$ (Multiple Object Tracking Accuracy) và $\\text{IDF1}$.
+              <br>• *Khang (Depth & TTC)*: Sai số tương đối tuyệt đối $\\text{AbsRel} = \\frac{1}{M}\\sum \\frac{|Z - Z^*|}{Z^*}$, Sai số bình phương trung bình $\\text{RMSE} = \\sqrt{\\frac{1}{M}\\sum (Z - Z^*)^2}$, Sai số thời gian va chạm $\\text{TTC Error (s)}$, Độ chính xác phân cấp cảnh báo FCW (%).
+              <br>• *Toàn Pipeline*: Độ trễ phân vị toàn trình $p95 < 33\\text{ ms}$, Thông lượng $\\text{FPS} \\ge 30$, Đỉnh bộ nhớ $\\text{Peak VRAM} < 2.5\\text{ GB}$.
+            </li>
+            <li><strong>Nghiên cứu Bóc tách (Ablation Studies)</strong>:
+              <br>• *Ablation TR-10 (Triết)*: Đánh giá thực nghiệm 3 mức ngưỡng ghép nối cấp 2 của ByteTrack (<code>track_low_thresh</code>: $0.1$ vs $0.2$ vs $0.3$). Mục đích: Tìm điểm cân bằng tối ưu giữa việc giảm tỷ lệ nhảy nhầm ID (ID Switches) và tránh sinh ra các track bám giả (False Positive Tracks).
+              <br>• *Ablation Quân*: So sánh backbone ResNet-18 vs ResNet-34 cho UFLDv2 để đo lường mức độ đánh đổi giữa điểm $F_1$ và tốc độ FPS.
+              <br>• *Ablation Khang*: Thử nghiệm 4 phương pháp làm mịn đạo hàm vận tốc $v_z$ (đạo hàm sai phân bậc 1, hồi quy tuyến tính khoảng cách, bộ lọc Kalman, trung bình trượt) để chọn giải pháp chống nhiễu hạt tốt nhất khi xe dằn xóc.
+            </li>
+            <li><strong>Phân tích Lỗi Chuyên sâu (Error Analysis)</strong>:
+              <br>• *Vật thể bị che khuất (Occlusion)*: Đánh giá ma trận nhầm lẫn khi người đi bộ/xe máy bị ô tô che khuất một phần để kiểm tra độ bền vững của bộ lọc Kalman trong ByteTrack.
+              <br>• *Chói đèn pha ban đêm (Night High-beam)*: Đo lường mức độ sai lệch bản đồ độ sâu khi xe đối diện rọi đèn pha trực tiếp và đề xuất cơ chế tự động cân bằng phơi sáng thích ứng (Auto-Exposure Normalization).
+            </li>
+          </ul>
+        </div>
+      `,
+
+      10: `
+        <h4>Slide 10: Kế hoạch Thực hiện & Lộ trình Gantt Chart</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Đồ án được triển khai chặt chẽ qua 4 giai đoạn trong Học kỳ FA26 (từ 09/2026 đến 12/2026) với 4 cột mốc đánh giá chính thức:</p>
+          <ul>
+            <li><strong>Giai đoạn 1 (Tháng 09/2026)</strong>: Nghiên cứu SOTA, Baseline, Chuẩn bị Dataset và <strong>Báo cáo Review 1 ngày 25/09/2026</strong> [ĐÃ HOÀN THÀNH 100%].</li>
+            <li><strong>Giai đoạn 2 (Tháng 10/2026)</strong>: Huấn luyện độc lập 3 nhánh: Triết (YOLOv10s 100ep & Ablation TR-10), Quân (UFLDv2 ResNet-18 trên CULane), Khang (Metric Depth & TTC) ➔ <strong>Báo cáo Review 2 (10/2026)</strong>.</li>
+            <li><strong>Giai đoạn 3 (Tháng 11/2026)</strong>: Ghép nối IntegratedPipeline v1.0, Benchmark Video Replay TR-11 trên RTX 4060 ➔ <strong>Báo cáo Review 3 (11/2026)</strong>.</li>
+            <li><strong>Giai đoạn 4 (Tháng 12/2026)</strong>: Xây dựng Dashboard HUD Demo, Hoàn thiện Quyển Luận văn & Bài báo Khoa học ➔ <strong>🏆 BẢO VỆ TỐT NGHIỆP CHÍNH THỨC (12/2026)</strong>.</li>
+          </ul>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Chu kỳ Học kỳ FA26 (09/2026 – 12/2026)</strong>: Toàn bộ đồ án diễn ra trong 4 tháng (15 tuần) với lộ trình phân bổ công việc tuần tự, có các điểm kiểm soát chất lượng (Quality Gates) rõ ràng.</li>
+            <li><strong>Tiến độ Thực tế Giai đoạn 1</strong>: Đã hoàn thành $100\\%$ các hạng mục đề cương, chuẩn hóa 3 tập dữ liệu CULane, BDD100K, KITTI và hoàn tất đợt chạy thực nghiệm Screening 50 epochs của YOLOv10s ($mAP_{50} = 52.87\\%$, Detector $7.15\\text{ ms}$).</li>
+            <li><strong>Mục tiêu Giai đoạn 2 (Tháng 10/2026)</strong>: Hoàn tất 3 bộ trọng số huấn luyện tối ưu độc lập của 3 thành viên: Triết hoàn thành Confirmation 100 epochs ($mAP_{50} \\ge 58 \\sim 60\\%$), Quân hoàn thành UFLDv2 ($F_1 \\ge 76.5\\%$), Khang hoàn thành Depth Anything V2 ViT-S Metric Depth và module <code>ttc.py</code>.</li>
+            <li><strong>Mục tiêu Giai đoạn 3 (Tháng 11/2026)</strong>: Đóng gói mã nguồn theo chuẩn Clean Architecture trong <code>src/adas_baselines/</code>, chạy kiểm thử toàn trình Video Replay TR-11 trên luồng video giao thông thực tế tại Việt Nam và GPU RTX 4060 cục bộ để nghiệm thu $p95 < 33\\text{ ms}$.</li>
+            <li><strong>Mục tiêu Giai đoạn 4 (Tháng 12/2026)</strong>: Xây dựng ứng dụng HUD Dashboard trực quan, hoàn tất quyển Luận văn Tốt nghiệp và bảo vệ chính thức trước Hội đồng.</li>
+          </ul>
+        </div>
+      `,
+
+      11: `
+        <h4>Slide 11: Kế hoạch Bài báo Khoa học (Paper Plan)</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Nhóm định hướng viết bài báo khoa học công bố tại Hội nghị Quốc tế / Tạp chí chuyên ngành uy tín với 3 đóng góp cốt lõi: Khung tích hợp triệt tiêu xung đột gradient, bằng chứng định lượng NMS-free giảm p95 latency, và thuật toán TTC camera đơn kết hợp Edge AI nhúng giá thành tối ưu (&lt; $800).</p>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Tên bài báo dự kiến</strong>: *"A Real-Time End-to-End Vision-Based ADAS: Integrating Lane Detection, NMS-Free Object Tracking, and Monocular Depth for Forward Collision Warning"*.</li>
+            <li><strong>Mục tiêu Công bố (Target Publication)</strong>: Các hội nghị/tạp chí quốc tế thuộc danh mục Scopus / Web of Science (như IEEE Access, MDPI Sensors, hoặc các Hội nghị Quốc tế uy tín về Xử lý Tín hiệu & AI).</li>
+            <li><strong>Đóng góp Khoa học 1 (Kiến trúc Hướng Hợp đồng)</strong>: Đề xuất giải pháp kiến trúc module hóa <code>IntegratedPipeline</code> với Data Contract <code>FrameRecord v1.0</code> giúp tránh hiện tượng cạnh tranh gradient (Gradient Conflict) cố hữu của các mô hình chia sẻ chung backbone như YOLOPv2, đồng thời loại bỏ rò rỉ VRAM.</li>
+            <li><strong>Đóng góp Khoa học 2 (Định lượng NMS-Free trong ADAS Tracking)</strong>: Cung cấp bộ dữ liệu thực nghiệm định lượng đầu tiên chứng minh việc ứng dụng cơ chế NMS-free Dual Label Assignment của YOLOv10 kết hợp ByteTrack giúp triệt tiêu dao động độ trễ đuôi $p95\\text{ Latency} < 16\\text{ ms}$ và duy trì $> 70\\text{ FPS}$ trên tập dữ liệu BDD100K 10 lớp.</li>
+            <li><strong>Đóng góp Khoa học 3 (Độ sâu Đơn ảnh & Thuật toán TTC Giá Rẻ)</strong>: Phát triển thuật toán lọc nhiễu vận tốc tiếp cận $v_z$ và tính $TTC$ chống rung lắc dựa trên bản đồ Monocular Metric Depth của Depth Anything V2 cho camera đơn, giúp toàn bộ hệ thống đạt chuẩn an toàn ISO 15623 với tổng chi phí phần cứng biên dưới $\$800$.</li>
+            <li><strong>Tài liệu Phân tích Học thuật & Tiềm năng Thương mại</strong>: Xem toàn văn báo cáo phân tích tính mới mẻ khoa học, so sánh đối chứng với các công trình SOTA (YOLOPv2, HybridNets, CLRNet) và hệ thống 11 bài báo quốc tế (CVPR, ECCV, TPAMI, ISO 15623) tại: <a href="PHAN_TICH_TINH_HOC_THUAT_VA_TIEM_NANG_THUONG_MAI_KLTN_ADAS.html" target="_blank" style="color: var(--cyan-neon); text-decoration: underline; font-family: var(--font-mono); font-size: 11.5px; font-weight: 700;">📑 Báo cáo Phân tích Trực quan (.html)</a> | <a href="PHAN_TICH_TINH_HOC_THUAT_VA_TIEM_NANG_THUONG_MAI_KLTN_ADAS.md" target="_blank" style="color: var(--text-muted); text-decoration: underline; font-family: var(--font-mono); font-size: 11px;">[Bản Raw .md]</a>.</li>
+          </ul>
+        </div>
+      `,
+
+      12: `
+        <h4>Slide 12: Nhận diện Rủi ro & Phương án Xử lý (Mitigation Plan)</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Nhóm chủ động nhận diện 5 rủi ro kỹ thuật lớn (Tràn VRAM, Rò rỉ dữ liệu, Trễ thời gian thực, Nhiễu rung lắc TTC, Thời tiết xấu) và đã chuẩn bị sẵn các giải pháp kỹ thuật cụ thể (BaseAdapter Context Manager, SHA-256 Check, TensorRT FP16, Kalman Filter, Data Augmentation).</p>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Rủi ro 1: Tràn bộ nhớ GPU VRAM khi nạp 3 models song song (Impact: HIGH, Prob: Medium)</strong>:
+              <br>• *Nguyên nhân*: Nạp đồng thời 3 mô hình Deep Learning có thể vượt quá dung lượng VRAM 8GB của RTX 4060 hoặc 8GB của Jetson Orin Nano.
+              <br>• *Giải pháp*: Chuẩn hóa lớp <code>BaseAdapter</code> bọc Context Manager tự động dọn sạch cache GPU sau mỗi frame; chọn biến thể ViT-S cho Depth và ResNet-18 cho UFLDv2 $\\implies$ Duy trì Peak VRAM $< 2.5\\text{ GB}$.
+            </li>
+            <li><strong>Rủi ro 2: Rò rỉ dữ liệu giữa tập Train và Validation (Impact: HIGH, Prob: Low)</strong>:
+              <br>• *Nguyên nhân*: Ảnh trong tập Val vô tình xuất hiện trong Train làm kết quả đánh giá bị sai lệch/phóng đại ảo.
+              <br>• *Giải pháp*: Chạy hàm <code>validate_disjoint_manifests()</code> kiểm tra mã băm SHA-256 trước khi huấn luyện $\\implies$ Chống leak $100\\%$.
+            </li>
+            <li><strong>Rủi ro 3: Độ trễ toàn trình vượt ngưỡng thời gian thực (Impact: HIGH, Prob: Medium)</strong>:
+              <br>• *Nguyên nhân*: Độ trễ cộng dồn 3 nhánh vượt quá $33.3\\text{ ms}$ ($< 30\\text{ FPS}$).
+              <br>• *Giải pháp*: Tối ưu hóa nửa độ chính xác FP16; xuất mô hình sang TensorRT Engine chạy trực tiếp trên Tensor Cores; tách luồng tiền xử lý GPU Resizing $\\implies p95 < 33\\text{ ms}$.
+            </li>
+            <li><strong>Rủi ro 4: Sai số TTC bị giật cục do xe rung lắc (Impact: MEDIUM, Prob: High)</strong>:
+              <br>• *Nguyên nhân*: Mặt đường mấp mô khiến camera rung lắc, làm đạo hàm khoảng cách $v_z = \\frac{dZ}{dt}$ bị nhiễu nhảy số liên tục.
+              <br>• *Giải pháp*: Tích hợp bộ lọc làm mịn Kalman Filter và Moving Average trong module <code>ttc.py</code> để làm mịn chuỗi tín hiệu $v_z$.
+            </li>
+            <li><strong>Rủi ro 5: Điều kiện thời tiết bất lợi - Mưa, Sương mù, Đêm (Impact: MEDIUM, Prob: High)</strong>:
+              <br>• *Nguyên nhân*: Ánh sáng yếu hoặc gạt mưa che khuất làm giảm độ tin cậy của camera.
+              <br>• *Giải pháp*: Bổ sung Data Augmentation thời tiết trong BDD100K/CULane; tích hợp cơ chế ngưỡng tin cậy động thích ứng với ánh sáng (Dynamic Confidence Thresholding).
+            </li>
+          </ul>
+        </div>
+      `,
+
+      13: `
+        <h4>Slide 13: Kết quả & Sản phẩm Bàn giao (Deliverables)</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Sau khi hoàn thành, nhóm cam kết bàn giao đầy đủ 5 nhóm sản phẩm: 3 models đã fine-tuned, Gói thư viện Python <code>adas_baselines</code> chuẩn Clean Architecture, Bộ báo cáo thực nghiệm định lượng, Ứng dụng Real-time HUD Dashboard Demo và Bản thảo Bài báo khoa học.</p>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>3 Models Deep Learning Đã Tối Ưu</strong>:
+              <br>• <code>yolov10s_best.pt</code> ($15.75\\text{ MB}$): Phát hiện và bám vết 10 lớp giao thông, NMS-free.
+              <br>• <code>ufldv2_culane.pth</code> (ResNet-18): Phát hiện vạch làn đường siêu nhanh ($> 120\\text{ FPS}$).
+              <br>• <code>depth_anything_v2_vits.pth</code> (ViT-S Metric): Ước lượng bản đồ độ sâu mét và tính thời gian va chạm $TTC$.
+            </li>
+            <li><strong>Khung Phần mềm Chuẩn <code>src/adas_baselines/</code></strong>:
+              <br>• Cấu trúc mã nguồn chuẩn Clean Architecture / SOLID: <code>adapters/</code>, <code>core/</code>, <code>contracts/</code>, <code>evaluation/</code>, <code>visualization/</code>.
+              <br>• Bộ Unit Tests đạt $100\\%$ pass rate với PyTest, độc lập và dễ bảo trì.
+            </li>
+            <li><strong>Bộ Báo cáo Thực nghiệm Định lượng</strong>:
+              <br>• Tệp <code>summary.json</code>, <code>frames.jsonl</code>, <code>frames.csv</code> ghi nhận chi tiết độ trễ, FPS, VRAM của từng frame phục vụ nghiệm thu định lượng trước Hội đồng.
+            </li>
+            <li><strong>Ứng dụng Real-time HUD Dashboard Demo</strong>:
+              <br>• Giao diện trực quan viết bằng PyQt / OpenCV hiển thị luồng video camera, vẽ vạch làn neon, hộp nhận diện BBox, ID bám vết, heatmap độ sâu góc nhỏ và bảng tín hiệu cảnh báo va chạm trước FCW 3 màu (Xanh/Vàng/Đỏ).
+            </li>
+            <li><strong>Tài liệu & Học thuật</strong>:
+              <br>• Toàn văn Quyển Luận văn Tốt nghiệp KLTN và Bản thảo Research Paper hoàn chỉnh.
+            </li>
+          </ul>
+        </div>
+      `,
+
+      14: `
+        <h4>Slide 14: Tổng kết 8 Câu hỏi Cốt lõi Bảo vệ Đồ án</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Nhóm xin tổng kết lại toàn bộ đề tài qua 8 câu hỏi cốt lõi: từ Problem, Research Gap, Baseline, Proposed Method, Dataset, Evaluation đến Deliverables và Risk Management.</p>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>1. Problem</strong>: Xây dựng hệ thống ADAS đa nhiệm tích hợp hoàn chỉnh (Làn đường, Vật thể & Bám vết, Độ sâu & Cảnh báo va chạm) thời gian thực chỉ dựa trên 01 Camera RGB đơn kết hợp Edge AI ($< $800).</li>
+            <li><strong>2. Research Gap</strong>: Khắc phục sự phân mảnh giữa các nghiên cứu đơn lẻ, nút thắt độ trễ của Monocular Depth và hiện tượng xung đột gradient của mạng đa nhiệm chia sẻ backbone.</li>
+            <li><strong>3. Baseline</strong>: Thiết lập mốc đối chứng khoa học độc lập: Canny-Hough/SCNN (Lane), YOLOv8s/YOLOv10n (Detection), StereoSGBM/DepthAnythingV1 (Depth).</li>
+            <li><strong>4. Proposed Method</strong>: UFLDv2 Row-based + YOLOv10s NMS-free Dual Head & ByteTrack + Depth Anything V2 ViT-S Metric Depth qua khung <code>IntegratedPipeline</code>.</li>
+            <li><strong>5. Dataset</strong>: CULane ($133\\text{k}$ frames, 9 kịch bản), BDD100K 10 lớp ($80\\text{k}$ ảnh, SHA-256 Anti-Leak $100\\%$, Focal Loss), KITTI Raw + CARLA Simulator ($Z \\le 80\\text{m}$).</li>
+            <li><strong>6. Evaluation</strong>: Bộ độ đo 4 chiều độc lập ($F_1$, $mAP$, $\\text{AbsRel}$, $\\text{TTC Error}$, $p95\\text{ Latency}$, $\\text{FPS}$, $\\text{VRAM}$), Ablation Study TR-10 và Phân tích lỗi che khuất/đêm.</li>
+            <li><strong>7. Deliverables</strong>: 3 models fine-tuned, Gói phần mềm <code>adas_baselines</code> Clean Architecture, Demo HUD Dashboard, Báo cáo thực nghiệm, Quyển Luận văn & Paper Draft.</li>
+            <li><strong>8. Risk Control</strong>: Khung <code>BaseAdapter</code> Context Manager chống tràn VRAM, Lọc Kalman làm mịn TTC, TensorRT FP16 tối ưu thời gian thực, Kiểm định SHA-256 chống rò rỉ dữ liệu.</li>
+          </ul>
+        </div>
+      `,
+
+      15: `
+        <h4>Slide 15: Lời Cảm Ơn & Phiên Chất Vấn Q&A</h4>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--cyan-neon);">🗣️ KỊCH BẢN NÓI (THUYẾT TRÌNH):</div>
+          <p>Nhóm xin chân thành cảm ơn Thầy Nguyễn Trọng Tài, Thầy Lê Phú Nguyên cùng quý Thầy Cô trong Hội đồng Review 1 đã chú ý lắng nghe phần trình bày của nhóm!</p>
+          <p>Nhóm KLTN-ADAS FA26AI50 kính mời quý Thầy Cô trong Hội đồng đặt câu hỏi chất vấn và góp ý chuyên môn để nhóm hoàn thiện đồ án xuất sắc hơn trong các giai đoạn tiếp theo.</p>
+        </div>
+        <div class="notes-section">
+          <div class="notes-heading" style="color: var(--amber-warn);">🔬 GIẢNG GIẢI CHI TIẾT & CƠ SỞ KỸ THUẬT:</div>
+          <ul>
+            <li><strong>Tinh thần Tiếp thu Học thuật</strong>: Lắng nghe, ghi chép đầy đủ các nhận xét, đóng góp quý báu của Hội đồng để hoàn thiện định hướng huấn luyện và tối ưu trong Giai đoạn 2 (Tháng 10/2026).</li>
+            <li><strong>Cam kết Kỹ thuật</strong>: Mọi số liệu báo cáo thực nghiệm đều dựa trên dữ liệu thật $100\\%$, mã nguồn đã sẵn sàng kiểm thử và tuân thủ nghiêm ngặt tiến độ Học kỳ FA26.</li>
+          </ul>
+        </div>
+      `
+    };
+
+    // Engine State
+    let currentSlide = 1;
+    const totalSlides = 15;
+
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.getElementById('topProgressBar');
+    const currSlideNumEl = document.getElementById('currSlideNum');
+    const totalSlideNumEl = document.getElementById('totalSlideNum');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesContent = document.getElementById('notesContent');
+    const overviewModal = document.getElementById('overviewModal');
+    const overviewGrid = document.getElementById('overviewGrid');
+
+    totalSlideNumEl.textContent = totalSlides.toString().padStart(2, '0');
+
+    // Build Overview Grid Cards
+    for (let i = 1; i <= totalSlides; i++) {
+      const card = document.createElement('div');
+      card.className = `overview-card ${i === 1 ? 'current' : ''}`;
+      card.dataset.slide = i;
+
+      const slideEl = document.getElementById(`slide-${i}`);
+      const title = slideEl ? slideEl.querySelector('.slide-title').textContent : `Slide ${i}`;
+
+      card.innerHTML = `
+        <div class="num">SLIDE ${i.toString().padStart(2, '0')}</div>
+        <div class="title">${title}</div>
+      `;
+      card.addEventListener('click', () => {
+        goToSlide(i);
+        closeOverview();
+      });
+      overviewGrid.appendChild(card);
+    }
+
+    function renderMathIfAvailable() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function updatePresentation() {
+      slides.forEach((slide, idx) => {
+        const slideNum = idx + 1;
+        if (slideNum === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      // Update progress bar
+      const progressPercent = ((currentSlide - 1) / (totalSlides - 1)) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Update counter
+      currSlideNumEl.textContent = currentSlide.toString().padStart(2, '0');
+
+      // Update speaker notes content
+      notesContent.innerHTML = speakerNotes[currentSlide] || '<p>Không có notes cho slide này.</p>';
+
+      // Render math inside notes as well
+      renderMathIfAvailable();
+
+      // Update overview active card
+      document.querySelectorAll('.overview-card').forEach(card => {
+        if (parseInt(card.dataset.slide) === currentSlide) {
+          card.classList.add('current');
+        } else {
+          card.classList.remove('current');
+        }
+      });
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updatePresentation();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updatePresentation();
+      }
+    }
+
+    function goToSlide(num) {
+      if (num >= 1 && num <= totalSlides) {
+        currentSlide = num;
+        updatePresentation();
+      }
+    }
+
+    function toggleNotes() {
+      notesDrawer.classList.toggle('open');
+      document.getElementById('btnNotes').classList.toggle('active');
+    }
+
+    function toggleOverview() {
+      overviewModal.classList.toggle('open');
+      document.getElementById('btnOverview').classList.toggle('active');
+    }
+
+    function closeOverview() {
+      overviewModal.classList.remove('open');
+      document.getElementById('btnOverview').classList.remove('active');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('btnNext').addEventListener('click', nextSlide);
+    document.getElementById('btnPrev').addEventListener('click', prevSlide);
+    document.getElementById('btnNotes').addEventListener('click', toggleNotes);
+    document.getElementById('btnCloseNotes').addEventListener('click', toggleNotes);
+    document.getElementById('btnOverview').addEventListener('click', toggleOverview);
+    document.getElementById('btnCloseOverview').addEventListener('click', closeOverview);
+    document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(1);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(totalSlides);
+      } else if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        toggleNotes();
+      } else if (e.key === 'o' || e.key === 'O') {
+        e.preventDefault();
+        toggleOverview();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'Escape') {
+        closeOverview();
+        notesDrawer.classList.remove('open');
+        document.getElementById('btnNotes').classList.remove('active');
+      }
+    });
+
+    // Touch Swipe Navigation
+    let touchStartX = 0;
+    let touchEndX = 0;
+    window.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, false);
+    window.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 60) nextSlide();
+      if (touchEndX > touchStartX + 60) prevSlide();
+    }, false);
+
+    // Initial Math & Presentation render on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMathIfAvailable();
+      updatePresentation();
+    });
+  </script>
+</body>
+
+</html>
