@@ -753,7 +753,8 @@
       letter-spacing: 0.3px;
     }
 
-    .flow-split-container, .flow-merge-container {
+    .flow-split-container,
+    .flow-merge-container {
       width: 100%;
       display: flex;
       justify-content: center;
@@ -801,8 +802,13 @@
     }
 
     @keyframes pulseExpandBtn {
-      0% { box-shadow: 0 0 12px rgba(0, 229, 255, 0.4), inset 0 0 8px rgba(0, 229, 255, 0.2); }
-      100% { box-shadow: 0 0 26px rgba(0, 229, 255, 0.85), inset 0 0 14px rgba(0, 229, 255, 0.35); }
+      0% {
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.4), inset 0 0 8px rgba(0, 229, 255, 0.2);
+      }
+
+      100% {
+        box-shadow: 0 0 26px rgba(0, 229, 255, 0.85), inset 0 0 14px rgba(0, 229, 255, 0.35);
+      }
     }
 
     /* Gantt Chart Component */
@@ -1387,6 +1393,24 @@
             </div>
           </div>
         </div>
+
+        <!-- Project Supervisors Footer Bar -->
+        <div class="card"
+          style="padding: 9px 18px; margin-top: 10px; background: rgba(56, 189, 248, 0.04); border-color: rgba(56, 189, 248, 0.25); display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-shrink: 0;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 15px;">👨‍🏫</span>
+            <span
+              style="font-family: var(--font-heading); font-size: 12.5px; font-weight: 700; color: var(--blue-accent); letter-spacing: 0.5px;">PROJECT
+              SUPERVISORS:</span>
+            <span style="font-size: 13.5px; color: #ffffff; font-weight: 600;">Lecturer: Nguyen Xuan Huy</span>
+            <span style="color: var(--border-card-active); margin: 0 6px;">•</span>
+            <span style="font-size: 13.5px; color: #ffffff; font-weight: 600;">Lecturer: Nguyen Quoc Trung</span>
+          </div>
+          <div
+            style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-neon); font-weight: 700; letter-spacing: 0.5px;">
+            DEPARTMENT OF ARTIFICIAL INTELLIGENCE
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1422,21 +1446,28 @@
 
           <!-- Pipeline Flow Diagram -->
           <div class="card" style="border-color: rgba(0, 229, 255, 0.4); display: flex; flex-direction: column;">
-            <div class="card-title" style="color: var(--cyan-neon); display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px;">
-              <span style="font-family: var(--font-heading); font-size: 14px; font-weight: 800; letter-spacing: 0.4px;">⚡ ADAS Pipeline Architecture</span>
-              <a href="adas_pipeline_architecture.html" target="_blank" class="btn-expand-full" title="Open Interactive Full Horizontal Pipeline Architecture">🔗 Click to Expand Full ↗</a>
+            <div class="card-title"
+              style="color: var(--cyan-neon); display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px;">
+              <span
+                style="font-family: var(--font-heading); font-size: 14px; font-weight: 800; letter-spacing: 0.4px;">⚡
+                ADAS Pipeline Architecture</span>
+              <a href="adas_pipeline_architecture.html" target="_blank" class="btn-expand-full"
+                title="Open Interactive Full Horizontal Pipeline Architecture">🔗 Click to Expand Full ↗</a>
             </div>
 
             <div class="pipeline-diagram">
               <!-- Input Node -->
               <div class="pipeline-node input-node">
-                <div style="font-weight: 700; font-size: 13px; color: var(--blue-accent);">📹 INPUT STREAM (Camera)</div>
-                <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">1x Monocular RGB (720p @ 30 FPS)</div>
+                <div style="font-weight: 700; font-size: 13px; color: var(--blue-accent);">📹 INPUT STREAM (Camera)
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">1x Monocular RGB
+                  (720p @ 30 FPS)</div>
               </div>
 
               <!-- Split Connector: Direct from Camera touching the 3 cards -->
               <div class="flow-split-container" style="height: 38px; margin: 0; line-height: 0;">
-                <svg class="flow-svg" viewBox="0 0 400 38" preserveAspectRatio="none" style="height: 38px; width: 100%; display: block;">
+                <svg class="flow-svg" viewBox="0 0 400 38" preserveAspectRatio="none"
+                  style="height: 38px; width: 100%; display: block;">
                   <!-- Trunk touching bottom edge of Camera (y=0) -->
                   <line x1="200" y1="0" x2="200" y2="18" stroke="var(--cyan-neon)" stroke-width="2.5" />
                   <!-- Horizontal distribution bus -->
@@ -1479,7 +1510,8 @@
 
               <!-- Merge Flow Connector: touching bottom of 3 cards and top of Contract Merge -->
               <div class="flow-merge-container" style="height: 34px; margin: 0; line-height: 0;">
-                <svg class="flow-svg" viewBox="0 0 400 34" preserveAspectRatio="none" style="height: 34px; width: 100%; display: block;">
+                <svg class="flow-svg" viewBox="0 0 400 34" preserveAspectRatio="none"
+                  style="height: 34px; width: 100%; display: block;">
                   <line x1="68" y1="0" x2="68" y2="16" stroke="#38bdf8" stroke-width="2.5" />
                   <line x1="200" y1="0" x2="200" y2="16" stroke="#10b981" stroke-width="2.5" />
                   <line x1="332" y1="0" x2="332" y2="16" stroke="#f59e0b" stroke-width="2.5" />
@@ -1490,22 +1522,26 @@
               </div>
 
               <!-- Merge Layer (Solid border) -->
-              <div style="background: rgba(168, 85, 247, 0.14); border: 1.5px solid var(--purple-accent); border-radius: 8px; padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; margin: 0;">
+              <div
+                style="background: rgba(168, 85, 247, 0.14); border: 1.5px solid var(--purple-accent); border-radius: 8px; padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; margin: 0;">
                 <span style="font-size: 12px; font-weight: 700; color: #fff;">📦 Immutable Contract Merge</span>
-                <span style="font-family: var(--font-mono); font-size: 11px; color: #c084fc;">FrameRecord contract v1.0</span>
+                <span style="font-family: var(--font-mono); font-size: 11px; color: #c084fc;">FrameRecord contract
+                  v1.0</span>
               </div>
 
               <!-- Direct Down Connector: touching bottom of Contract Merge (y=0) and top of HUD (tip at y=37) -->
               <div class="flow-arrow-down" style="height: 38px; margin: 0; line-height: 0;">
                 <svg width="24" height="38" viewBox="0 0 24 38" style="display: block;">
-                  <line x1="12" y1="0" x2="12" y2="26" stroke="var(--emerald-safe)" stroke-width="2.5" stroke-linecap="round" />
+                  <line x1="12" y1="0" x2="12" y2="26" stroke="var(--emerald-safe)" stroke-width="2.5"
+                    stroke-linecap="round" />
                   <polygon points="6,24 18,24 12,37" fill="var(--emerald-safe)" />
                 </svg>
               </div>
 
               <!-- Output Node -->
               <div class="pipeline-node output-node">
-                <div style="font-weight: 700; font-size: 12.5px; color: var(--emerald-safe);">🎬 REAL-TIME HUD & ALERTS</div>
+                <div style="font-weight: 700; font-size: 12.5px; color: var(--emerald-safe);">🎬 REAL-TIME HUD & ALERTS
+                </div>
                 <div style="display: flex; gap: 6px;">
                   <span class="badge-safe">SAFE</span>
                   <span class="badge-warn">WARN</span>
@@ -1601,7 +1637,8 @@
               <td>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                   <strong style="color: #ffffff;">YOLOv10</strong>
-                  <a href="https://arxiv.org/abs/2405.14458" target="_blank" class="badge-paper-sm" title="Paper: YOLOv10 (arXiv 2024)">arXiv 2024 ↗</a>
+                  <a href="https://arxiv.org/abs/2405.14458" target="_blank" class="badge-paper-sm"
+                    title="Paper: YOLOv10 (arXiv 2024)">arXiv 2024 ↗</a>
                 </div>
               </td>
               <td style="text-align: center;">2024</td>
@@ -1615,7 +1652,8 @@
               <td>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                   <strong style="color: #ffffff;">ByteTrack</strong>
-                  <a href="https://arxiv.org/abs/2110.06864" target="_blank" class="badge-paper-sm" title="Paper: ByteTrack (ECCV 2022)">ECCV 2022 ↗</a>
+                  <a href="https://arxiv.org/abs/2110.06864" target="_blank" class="badge-paper-sm"
+                    title="Paper: ByteTrack (ECCV 2022)">ECCV 2022 ↗</a>
                 </div>
               </td>
               <td style="text-align: center;">2022</td>
@@ -1629,7 +1667,8 @@
               <td>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                   <strong style="color: #ffffff;">UFLDv2</strong>
-                  <a href="https://arxiv.org/abs/2206.07389" target="_blank" class="badge-paper-sm" title="Paper: UFLDv2 (IEEE TPAMI 2022)">TPAMI 2022 ↗</a>
+                  <a href="https://arxiv.org/abs/2206.07389" target="_blank" class="badge-paper-sm"
+                    title="Paper: UFLDv2 (IEEE TPAMI 2022)">TPAMI 2022 ↗</a>
                 </div>
               </td>
               <td style="text-align: center;">2022</td>
@@ -1643,7 +1682,8 @@
               <td>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                   <strong style="color: #ffffff;">CLRNet</strong>
-                  <a href="https://arxiv.org/abs/2203.10350" target="_blank" class="badge-paper-sm" title="Paper: CLRNet (CVPR 2022)">CVPR 2022 ↗</a>
+                  <a href="https://arxiv.org/abs/2203.10350" target="_blank" class="badge-paper-sm"
+                    title="Paper: CLRNet (CVPR 2022)">CVPR 2022 ↗</a>
                 </div>
               </td>
               <td style="text-align: center;">2022</td>
@@ -1657,7 +1697,8 @@
               <td>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                   <strong style="color: #ffffff;">Depth Anything V2</strong>
-                  <a href="https://arxiv.org/abs/2406.09414" target="_blank" class="badge-paper-sm" title="Paper: Depth Anything V2 (arXiv 2024)">arXiv 2024 ↗</a>
+                  <a href="https://arxiv.org/abs/2406.09414" target="_blank" class="badge-paper-sm"
+                    title="Paper: Depth Anything V2 (arXiv 2024)">arXiv 2024 ↗</a>
                 </div>
               </td>
               <td style="text-align: center;">2024</td>
@@ -1671,7 +1712,8 @@
               <td>
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                   <strong style="color: #ffffff;">YOLOPv2</strong>
-                  <a href="https://arxiv.org/abs/2208.11434" target="_blank" class="badge-paper-sm" title="Paper: YOLOPv2 (arXiv 2022)">arXiv 2022 ↗</a>
+                  <a href="https://arxiv.org/abs/2208.11434" target="_blank" class="badge-paper-sm"
+                    title="Paper: YOLOPv2 (arXiv 2022)">arXiv 2022 ↗</a>
                 </div>
               </td>
               <td style="text-align: center;">2022</td>
@@ -1702,13 +1744,19 @@
           <div class="card track-quan">
             <div class="card-title" style="color: #38bdf8;">🛣️ Lane Perception Track (Quan)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_baseline_verification.html#quan-baseline" target="_blank" class="badge-evidence badge-evidence-paper" title="View Baseline Evidence & Benchmarks for Lane Perception">🔗 Link connect source ↗</a>
+              <a href="adas_baseline_verification.html#quan-baseline" target="_blank"
+                class="badge-evidence badge-evidence-paper"
+                title="View Baseline Evidence & Benchmarks for Lane Perception">🔗 Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
-              <li><strong>Baseline 1: Canny-Hough</strong> (Dataset: CULane)<br>Edge filter + trapezoidal ROI. Fast (&gt; 100 FPS) but F1 &lt; 40% (fails on glare/shadows).</li>
-              <li><strong>Baseline 2: SCNN</strong> (Dataset: CULane)<br>Sequential spatial segmentation. F1 = 71.6% but severe latency bottleneck (~7.5 FPS / 133 ms).</li>
-              <li><strong>Selected Baseline: UFLDv2 ResNet-18</strong> (Dataset: CULane)<br>Row-based anchor classification. <em>Target</em>: F1 ≥ 76.5%, Speed &gt; 120 FPS (~7.5 ms).</li>
-              <li><strong>Rationale</strong>: Breaks the trade-off dilemma between speed (Canny) and accuracy (SCNN).</li>
+              <li><strong>Baseline 1: Canny-Hough</strong> (Dataset: CULane)<br>Edge filter + trapezoidal ROI. Fast
+                (&gt; 100 FPS) but F1 &lt; 40% (fails on glare/shadows).</li>
+              <li><strong>Baseline 2: SCNN</strong> (Dataset: CULane)<br>Sequential spatial segmentation. F1 = 71.6% but
+                severe latency bottleneck (~7.5 FPS / 133 ms).</li>
+              <li><strong>Selected Baseline: UFLDv2 ResNet-18</strong> (Dataset: CULane)<br>Row-based anchor
+                classification. <em>Target</em>: F1 ≥ 76.5%, Speed &gt; 120 FPS (~7.5 ms).</li>
+              <li><strong>Rationale</strong>: Breaks the trade-off dilemma between speed (Canny) and accuracy (SCNN).
+              </li>
             </ul>
           </div>
 
@@ -1716,13 +1764,20 @@
           <div class="card track-triet">
             <div class="card-title" style="color: #10b981;">🚗 Detection & Tracking Track (Triet)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_baseline_verification.html#triet-baseline" target="_blank" class="badge-evidence badge-evidence-paper" title="View Baseline Evidence & Benchmarks for Detection & Tracking">🔗 Link connect source ↗</a>
+              <a href="adas_baseline_verification.html#triet-baseline" target="_blank"
+                class="badge-evidence badge-evidence-paper"
+                title="View Baseline Evidence & Benchmarks for Detection & Tracking">🔗 Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
-              <li><strong>Baseline 1: YOLOv8s</strong> (Dataset: COCO / BDD100K)<br>mAP₅₀ ≈ 62.5%, but NMS post-processing adds +2.5 ~ 4.0 ms, causing p95 tail latency jitter.</li>
-              <li><strong>Baseline 2: YOLOv10n</strong> (Dataset: BDD100K 10 classes)<br>Resource lower-bound 2.27M params, fast (4.5 ms) but mAP₅₀ = 56.41% due to constrained capacity.</li>
-              <li><strong>Selected Baseline: YOLOv10s NMS-free</strong> (Dataset: BDD100K)<br>Dual Heads. <em>Target</em>: mAP₅₀ ≥ 58 ~ 60%, 140 FPS, NMS Overhead 0.0 ms.</li>
-              <li><strong>Rationale</strong>: Optimal sweet spot eliminating NMS overhead while maintaining high detection capacity.</li>
+              <li><strong>Baseline 1: YOLOv8s</strong> (Dataset: COCO / BDD100K)<br>mAP₅₀ ≈ 62.5%, but NMS
+                post-processing adds +2.5 ~ 4.0 ms, causing p95 tail latency jitter.</li>
+              <li><strong>Baseline 2: YOLOv10n</strong> (Dataset: BDD100K 10 classes)<br>Resource lower-bound 2.27M
+                params, fast (4.5 ms) but mAP₅₀ = 56.41% due to constrained capacity.</li>
+              <li><strong>Selected Baseline: YOLOv10s NMS-free</strong> (Dataset: BDD100K)<br>Dual Heads.
+                <em>Target</em>: mAP₅₀ ≥ 58 ~ 60%, 140 FPS, NMS Overhead 0.0 ms.
+              </li>
+              <li><strong>Rationale</strong>: Optimal sweet spot eliminating NMS overhead while maintaining high
+                detection capacity.</li>
             </ul>
           </div>
 
@@ -1730,13 +1785,19 @@
           <div class="card track-khang">
             <div class="card-title" style="color: #f59e0b;">📏 Depth & TTC Track (Khang)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_baseline_verification.html#khang-baseline" target="_blank" class="badge-evidence badge-evidence-paper" title="View Baseline Evidence & Benchmarks for Depth & TTC">🔗 Link connect source ↗</a>
+              <a href="adas_baseline_verification.html#khang-baseline" target="_blank"
+                class="badge-evidence badge-evidence-paper"
+                title="View Baseline Evidence & Benchmarks for Depth & TTC">🔗 Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
-              <li><strong>Baseline 1: StereoSGBM</strong> (Dataset: KITTI Stereo)<br>Physical triangulation (Z = f · B / d) but requires rigid, vibration-sensitive dual-camera calibration.</li>
-              <li><strong>Baseline 2: Depth Anything V1</strong> (Dataset: KITTI Eigen)<br>Monocular vision but yields only relative depth [0, 1], lacking metric meters for TTC.</li>
-              <li><strong>Selected Baseline: Depth Anything V2 ViT-S</strong> (Dataset: KITTI &amp; CARLA)<br>Monocular Metric Depth. <em>Target</em>: Metric Z (m), AbsRel &lt; 0.12, TTC &lt; 15 ms.</li>
-              <li><strong>Rationale</strong>: Achieves metric distance sensing using a commercial single monocular camera for TTC warning.</li>
+              <li><strong>Baseline 1: StereoSGBM</strong> (Dataset: KITTI Stereo)<br>Physical triangulation (Z = f · B /
+                d) but requires rigid, vibration-sensitive dual-camera calibration.</li>
+              <li><strong>Baseline 2: Depth Anything V1</strong> (Dataset: KITTI Eigen)<br>Monocular vision but yields
+                only relative depth [0, 1], lacking metric meters for TTC.</li>
+              <li><strong>Selected Baseline: Depth Anything V2 ViT-S</strong> (Dataset: KITTI &amp; CARLA)<br>Monocular
+                Metric Depth. <em>Target</em>: Metric Z (m), AbsRel &lt; 0.12, TTC &lt; 15 ms.</li>
+              <li><strong>Rationale</strong>: Achieves metric distance sensing using a commercial single monocular
+                camera for TTC warning.</li>
             </ul>
           </div>
         </div>
@@ -1759,7 +1820,9 @@
           <div class="card track-quan">
             <div class="card-title" style="color: #38bdf8;">🛣️ UFLDv2 Anchor-based (Quan)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_sources_verification.html#quan-ufldv2" target="_blank" class="badge-evidence badge-evidence-paper" title="View Verification & Model/Weights for UFLDv2">🔗 Link connect source ↗</a>
+              <a href="adas_sources_verification.html#quan-ufldv2" target="_blank"
+                class="badge-evidence badge-evidence-paper" title="View Verification & Model/Weights for UFLDv2">🔗 Link
+                connect source ↗</a>
             </div>
             <ul class="bullet-list">
               <li><strong>Mechanism</strong>: Row-based classification on coarse grid C × N_row × (N_col + 1), cutting
@@ -1774,7 +1837,9 @@
           <div class="card track-triet">
             <div class="card-title" style="color: #10b981;">🚗 YOLOv10s + ByteTrack (Triet)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_sources_verification.html#triet-yolov10" target="_blank" class="badge-evidence badge-evidence-paper" title="View Verification & Model/Weights for YOLOv10 & ByteTrack">🔗 Link connect source ↗</a>
+              <a href="adas_sources_verification.html#triet-yolov10" target="_blank"
+                class="badge-evidence badge-evidence-paper"
+                title="View Verification & Model/Weights for YOLOv10 & ByteTrack">🔗 Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
               <li><strong>NMS-free Mechanism</strong>: Train with Dual Heads (One-to-Many + One-to-One), Inference uses
@@ -1793,7 +1858,9 @@
           <div class="card track-khang">
             <div class="card-title" style="color: #f59e0b;">📏 Depth Anything V2 & FCW (Khang)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_sources_verification.html#khang-depth" target="_blank" class="badge-evidence badge-evidence-paper" title="View Verification & Model/Weights for Depth Anything V2 & ISO 15623">🔗 Link connect source ↗</a>
+              <a href="adas_sources_verification.html#khang-depth" target="_blank"
+                class="badge-evidence badge-evidence-paper"
+                title="View Verification & Model/Weights for Depth Anything V2 & ISO 15623">🔗 Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
               <li><strong>Mechanism</strong>: ViT-S Metric Depth extracts physical distance Z (meters); object depth
@@ -1837,7 +1904,9 @@
           <div class="card track-quan">
             <div class="card-title" style="color: #38bdf8;">🛣️ CULane Dataset (Quan)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_sources_verification.html#quan-culane" target="_blank" class="badge-evidence badge-evidence-dataset" title="View Verification & CULane Dataset Repository">🔗 Link connect source ↗</a>
+              <a href="adas_sources_verification.html#quan-culane" target="_blank"
+                class="badge-evidence badge-evidence-dataset" title="View Verification & CULane Dataset Repository">🔗
+                Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
               <li><strong>Scale</strong>: 133,235 video frames across 9 challenging traffic scenarios (night, glare,
@@ -1853,7 +1922,9 @@
           <div class="card track-triet">
             <div class="card-title" style="color: #10b981;">🚗 BDD100K 10 Classes (Triet)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_sources_verification.html#triet-bdd100k" target="_blank" class="badge-evidence badge-evidence-dataset" title="View Verification & BDD100K Dataset Repository">🔗 Link connect source ↗</a>
+              <a href="adas_sources_verification.html#triet-bdd100k" target="_blank"
+                class="badge-evidence badge-evidence-dataset" title="View Verification & BDD100K Dataset Repository">🔗
+                Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
               <li><strong>Scale</strong>: 80,000 images (70,000 train / 10.000 val) mapped to 10 standard ADAS classes.
@@ -1869,7 +1940,9 @@
           <div class="card track-khang">
             <div class="card-title" style="color: #f59e0b;">📏 KITTI Raw & CARLA (Khang)</div>
             <div class="card-evidence-wrap">
-              <a href="adas_sources_verification.html#khang-kitti" target="_blank" class="badge-evidence badge-evidence-dataset" title="View Verification & KITTI / CARLA Repositories">🔗 Link connect source ↗</a>
+              <a href="adas_sources_verification.html#khang-kitti" target="_blank"
+                class="badge-evidence badge-evidence-dataset" title="View Verification & KITTI / CARLA Repositories">🔗
+                Link connect source ↗</a>
             </div>
             <ul class="bullet-list">
               <li><strong>Scale</strong>: Synchronized Stereo + LiDAR Point Cloud from KITTI Raw combined with 5,000
@@ -1880,6 +1953,32 @@
                 at 100 km/h).</li>
             </ul>
           </div>
+        </div>
+
+        <!-- 6-Stage Standard Data Engineering Pipeline Bar -->
+        <div class="card"
+          style="padding: 9px 16px; margin-top: 8px; background: rgba(0, 229, 255, 0.04); border-color: rgba(0, 229, 255, 0.25); display: flex; flex-direction: row; justify-content: space-between; align-items: center; flex-shrink: 0;">
+          <div
+            style="font-family: var(--font-heading); font-size: 11.5px; font-weight: 800; color: var(--cyan-neon); letter-spacing: 0.6px; white-space: nowrap; margin-right: 12px;">
+            🔄 STANDARDIZED DATA PIPELINE:
+          </div>
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; flex: 1; font-family: var(--font-mono); font-size: 11.5px;">
+            <span style="color: #cbd5e1; font-weight: 600;">1. Raw Data</span>
+            <span style="color: var(--cyan-neon); margin: 0 4px;">➔</span>
+            <span style="color: #cbd5e1; font-weight: 600;">2. Data Cleaning</span>
+            <span style="color: var(--cyan-neon); margin: 0 4px;">➔</span>
+            <span style="color: #cbd5e1; font-weight: 600;">3. Preprocessing</span>
+            <span style="color: var(--cyan-neon); margin: 0 4px;">➔</span>
+            <span style="color: #cbd5e1; font-weight: 600;">4. Labeling</span>
+            <span style="color: var(--cyan-neon); margin: 0 4px;">➔</span>
+            <span style="color: #cbd5e1; font-weight: 600;">5. Validation</span>
+            <span style="color: var(--cyan-neon); margin: 0 4px;">➔</span>
+            <span style="color: #cbd5e1; font-weight: 600;">6. Train/Val Split</span>
+          </div>
+          <span class="badge-safe"
+            style="font-size: 10.5px; padding: 2px 7px; margin-left: 14px; white-space: nowrap;">SHA-256 ZERO
+            LEAKAGE</span>
         </div>
       </div>
     </section>
@@ -2121,7 +2220,8 @@
               RESEARCH PAPER</span>
             <a href="adas_PHAN_TICH_TINH_HOC_THUAT_VA_TIEM_NANG_THUONG_MAI_KLTN_ADAS.html" target="_blank"
               class="badge-potential-report"
-              title="Open Academic Rigor & Commercial Viability Analysis Report (Standalone Report)">POTENTIAL REPORT ↗</a>
+              title="Open Academic Rigor & Commercial Viability Analysis Report (Standalone Report)">POTENTIAL REPORT
+              ↗</a>
           </div>
           <h3
             style="font-family: var(--font-heading); font-size: 20px; color: #ffffff; line-height: 1.35; margin-top: 5px;">
@@ -2240,40 +2340,61 @@
         <span class="slide-tag">Risk Matrix</span>
       </div>
       <div class="slide-body" style="justify-content: center;">
-        <div class="card" style="padding: 0; overflow: hidden; border-color: rgba(56, 189, 248, 0.25); background: rgba(10, 16, 32, 0.65);">
+        <div class="card"
+          style="padding: 0; overflow: hidden; border-color: rgba(56, 189, 248, 0.25); background: rgba(10, 16, 32, 0.65);">
           <table class="hud-table" style="font-size: 14.5px; margin: 0;">
             <thead>
               <tr>
-                <th style="width: 29%; padding: 13px 18px; font-size: 14.5px;">Technical Risk / Engineering Challenge</th>
+                <th style="width: 29%; padding: 13px 18px; font-size: 14.5px;">Technical Risk / Engineering Challenge
+                </th>
                 <th style="width: 12%; text-align: center; padding: 13px 18px; font-size: 14.5px;">Impact Level</th>
                 <th style="padding: 13px 18px; font-size: 14.5px;">Root-Cause Technical Mitigation</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">1. GPU VRAM Out-of-Memory running 3 models</td>
-                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert" style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
-                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Encapsulated via <code>BaseAdapter</code> Context Manager for automatic VRAM clearance; select ViT-S for Depth ➔ <strong>Peak VRAM &lt; 2.5 GB</strong>.</td>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">1. GPU VRAM
+                  Out-of-Memory running 3 models</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert"
+                    style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Encapsulated via
+                  <code>BaseAdapter</code> Context Manager for automatic VRAM clearance; select ViT-S for Depth ➔
+                  <strong>Peak VRAM &lt; 2.5 GB</strong>.
+                </td>
               </tr>
               <tr>
-                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">2. Data Leakage between Train and Validation sets</td>
-                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert" style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
-                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Automated SHA-256 hash validation <code>validate_disjoint_manifests()</code> prior to training ➔ <strong>100% Zero Leakage guarantee</strong>.</td>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">2. Data Leakage
+                  between Train and Validation sets</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert"
+                    style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Automated SHA-256 hash validation
+                  <code>validate_disjoint_manifests()</code> prior to training ➔ <strong>100% Zero Leakage
+                    guarantee</strong>.
+                </td>
               </tr>
               <tr>
-                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">3. Cumulative End-to-End Latency exceeds real-time budget</td>
-                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert" style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
-                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Export models to TensorRT FP16 running directly on Tensor Cores ➔ <strong>p95 Latency &lt; 33 ms</strong>.</td>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">3. Cumulative
+                  End-to-End Latency exceeds real-time budget</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-alert"
+                    style="font-size: 12.5px; padding: 4px 10px;">HIGH</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Export models to TensorRT FP16 running
+                  directly on Tensor Cores ➔ <strong>p95 Latency &lt; 33 ms</strong>.</td>
               </tr>
               <tr>
-                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">4. Jitter in TTC Computation due to vehicle vibration</td>
-                <td style="text-align: center; padding: 13px 18px;"><span class="badge-warn" style="font-size: 12.5px; padding: 4px 10px;">MEDIUM</span></td>
-                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Integrated Kalman filtering and moving average in <code>ttc.py</code> to smooth approach velocity $v_z$.</td>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">4. Jitter in TTC
+                  Computation due to vehicle vibration</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-warn"
+                    style="font-size: 12.5px; padding: 4px 10px;">MEDIUM</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Integrated Kalman filtering and moving
+                  average in <code>ttc.py</code> to smooth approach velocity $v_z$.</td>
               </tr>
               <tr>
-                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">5. Adverse Weather Conditions (Rain, Fog, Night Glare)</td>
-                <td style="text-align: center; padding: 13px 18px;"><span class="badge-warn" style="font-size: 12.5px; padding: 4px 10px;">MEDIUM</span></td>
-                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Applied weather data augmentations on BDD100K/CULane; activate adaptive dynamic confidence thresholding.</td>
+                <td style="padding: 13px 18px; font-weight: 700; color: #ffffff; font-size: 15px;">5. Adverse Weather
+                  Conditions (Rain, Fog, Night Glare)</td>
+                <td style="text-align: center; padding: 13px 18px;"><span class="badge-warn"
+                    style="font-size: 12.5px; padding: 4px 10px;">MEDIUM</span></td>
+                <td style="padding: 13px 18px; color: #cbd5e1; line-height: 1.5;">Applied weather data augmentations on
+                  BDD100K/CULane; activate adaptive dynamic confidence thresholding.</td>
               </tr>
             </tbody>
           </table>
